@@ -18,7 +18,7 @@ const budgets = [
   { id: 3, name: "Transportation", amount: 300, spent: 200 },
 ];
 
-export default function BudgetsPage() {
+export default function Page() {
   return (
     <div className="w-full p-4">
       <h1 className="text-2xl font-bold mb-4">Budgets</h1>

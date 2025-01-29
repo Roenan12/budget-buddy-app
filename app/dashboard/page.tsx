@@ -9,7 +9,7 @@ import {
 import { BudgetGraph } from "@/components/BudgetGraph";
 import { RecentExpenses } from "@/components/RecentExpenses";
 
-export default function DashboardPage() {
+export default function Page() {
   const totalBudget = 5000;
   const totalExpenses = 3500;
 
