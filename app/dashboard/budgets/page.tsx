@@ -10,15 +10,22 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { getBudgets, getExpenses } from "@/lib/data-service";
+import BudgetList from "@/components/BudgetList";
 
 // Placeholder data
-const budgets = [
-  { id: 1, name: "Groceries", amount: 500, spent: 300 },
-  { id: 2, name: "Entertainment", amount: 200, spent: 150 },
-  { id: 3, name: "Transportation", amount: 300, spent: 200 },
-];
+// const budgets = [
+//   { id: 1, name: "Groceries", amount: 500, spent: 300 },
+//   { id: 2, name: "Entertainment", amount: 200, spent: 150 },
+//   { id: 3, name: "Transportation", amount: 300, spent: 200 },
+// ];
 
-export default function Page() {
+export default async function Page() {
+  const expenses = await getExpenses();
+
+  if (!expenses) return null;
+  console.log(expenses);
+
   return (
     <div className="w-full p-4">
       <h1 className="text-2xl font-bold mb-4">Budgets</h1>
@@ -39,31 +46,7 @@ export default function Page() {
         </div>
       </form>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {budgets.map((budget) => (
-          <Card key={budget.id}>
-            <CardHeader>
-              <CardTitle>{budget.name}</CardTitle>
-              <CardDescription>${budget.amount}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Progress
-                value={(budget.spent / budget.amount) * 100}
-                className="w-full"
-              />
-              <div className="flex justify-between mt-2 text-sm text-gray-600">
-                <span>${budget.spent} spent</span>
-                <span>${budget.amount - budget.spent} remaining</span>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full">
-                View Details
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+      <BudgetList />
     </div>
   );
 }
