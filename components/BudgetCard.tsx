@@ -1,4 +1,3 @@
-import { Progress } from "@radix-ui/react-progress";
 import {
   Card,
   CardContent,
@@ -9,41 +8,48 @@ import {
 } from "./ui/card";
 import { Button } from "./ui/button";
 import { Budget } from "@/lib/data-service";
+import Link from "next/link";
+import { formatPercentage } from "@/lib/helpers";
 
 type BudgetCardProps = {
   budget: Budget;
 };
 
-function BudgetCard({ budget }: BudgetCardProps) {
-  const { id, name, amount, category } = budget;
+async function BudgetCard({ budget }: BudgetCardProps) {
+  const { id, name, amount, category, expenses } = budget;
+
+  const amountSpent = expenses?.amountSpent || 0;
+  const remainingAmount = amount - amountSpent;
 
   return (
     <>
-      <Card key={id}>
+      <Card>
         <CardHeader>
           <CardTitle>{name}</CardTitle>
-          <CardDescription>${amount}</CardDescription>
+          <CardDescription>
+            {category} - ${amount}
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <Progress
-            // value={(amountSpent / amount) * 100}
-            className="w-full"
-          />
+          <progress
+            max={amount}
+            value={amountSpent}
+            className="relative w-full h-full overflow-hidden rounded-full appearance-none bg-slate-200 [&::-webkit-progress-bar]:bg-slate-50 [&::-webkit-progress-value]:bg-lime-400 [&::-webkit-progress-value]:rounded-full [&::-moz-progress-bar]:bg-lime-400"
+          >
+            {formatPercentage(amountSpent / amount)}
+          </progress>
           <div className="flex justify-between mt-2 text-sm text-gray-600">
-            <span>
-              {/* ${expenses} */}
-              spent
-            </span>
-            <span>
-              {/* ${amount - amountSpent} */}
-              remaining
-            </span>
+            <span>${amountSpent} spent</span>
+            <span>${remainingAmount} remaining</span>
           </div>
         </CardContent>
         <CardFooter>
-          <Button variant="outline" className="w-full">
+          <Link
+            href={`budgets/${id}`}
+            className="w-full inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+          >
             View Details
-          </Button>
+          </Link>
         </CardFooter>
       </Card>
     </>

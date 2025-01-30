@@ -9,36 +9,32 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { getBudgets, getExpenses } from "@/lib/data-service";
 import BudgetList from "@/components/BudgetList";
+import Spinner from "@/components/ui/spinner";
+import { Suspense } from "react";
+import { Metadata } from "next";
 
-// Placeholder data
-// const budgets = [
-//   { id: 1, name: "Groceries", amount: 500, spent: 300 },
-//   { id: 2, name: "Entertainment", amount: 200, spent: 150 },
-//   { id: 3, name: "Transportation", amount: 300, spent: 200 },
-// ];
+export const metadata: Metadata = {
+  title: "Budgets",
+};
+
+export const revalidate = 0; // invalidate the cache / update with current data (this only works for static content) (3600 - every hour)
 
 export default async function Page() {
-  const expenses = await getExpenses();
-
-  if (!expenses) return null;
-  console.log(expenses);
-
+  const test = 1;
   return (
     <div className="w-full p-4">
       <h1 className="text-2xl font-bold mb-4">Budgets</h1>
 
       <form className="mb-8">
-        <div className="flex gap-4">
-          <div className="flex-1">
+        <div className="flex gap-2 flex-col md:flex-row">
+          <div className="md:flex-1">
             <Label htmlFor="name">Budget Name</Label>
-            <Input id="name" required />
+            <Input id="name" placeholder="e.g. Groceries" required />
           </div>
-          <div className="flex-1">
+          <div className="md:flex-1">
             <Label htmlFor="amount">Amount</Label>
-            <Input id="amount" type="number" required />
+            <Input id="amount" type="number" placeholder="e.g. $250" required />
           </div>
           <Button type="submit" className="mt-6">
             Add Budget
@@ -46,7 +42,9 @@ export default async function Page() {
         </div>
       </form>
 
-      <BudgetList />
+      <Suspense fallback={<Spinner />} key={test}>
+        <BudgetList />
+      </Suspense>
     </div>
   );
 }

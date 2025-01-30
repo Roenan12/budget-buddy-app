@@ -1,15 +1,15 @@
 import { supabase } from "./supabase";
 import { notFound } from "next/navigation";
 
-// type ExpenseDetails = {
-//   amountSpent: number;
-// };
+type ExpenseDetails = {
+  amountSpent: number;
+};
 
 export type Finance = {
   id: number;
   totalBudget: number;
   totalExpenses: number;
-  totalRemaining: number;
+  totalRemainingBudget: number;
   activeBudgets: number;
   budgetId: number;
   expenseId: number;
@@ -20,6 +20,7 @@ export type Budget = {
   name: string;
   amount: number;
   category: string;
+  expenses: ExpenseDetails;
 };
 
 export type Expense = {
@@ -55,7 +56,7 @@ export async function getFinances(userId: number): Promise<Finance[]> {
   const { data, error } = await supabase
     .from("finances")
     .select(
-      "id, totalBudget, totalExpenses, totalRemaining, activeBudgets, budgetId, expenseId, budgets(name, amount), expenses(amountSpent)"
+      "id, totalBudget, totalExpenses, totalRemainingBudget, activeBudgets, budgetId, expenseId, budgets(name, amount), expenses(amountSpent)"
     )
     .eq("userId", userId)
     .order("startDate");
@@ -95,20 +96,33 @@ export async function getBudget(id: number): Promise<Budget | null> {
   return data;
 }
 
-export const getBudgets = async function (): Promise<Budget[]> {
+export async function getBudgets(): Promise<Budget[]> {
   const { data, error } = await supabase
     .from("budgets")
-    .select("id, name, amount, category");
+    .select(`id, name, amount, category, expenseId, expenses(amountSpent)`)
+    .order("id");
+
+  //for testing, delay for 2secs
+  // await new Promise((res) => setTimeout(res, 2000));
 
   if (error) {
     console.error(error);
     throw new Error("Budgets could not be loaded");
   }
 
-  return data || [];
-};
+  if (!data) return [];
 
-export const getExpenses = async function (): Promise<Expense[]> {
+  const Budgets: Budget[] = data.map((budget) => ({
+    ...budget,
+    expenses: Array.isArray(budget.expenses)
+      ? budget.expenses[0]
+      : budget.expenses,
+  }));
+
+  return Budgets;
+}
+
+export async function getExpenses(): Promise<Expense[]> {
   const { data, error } = await supabase
     .from("expenses")
     .select("id, name, amountSpent, date, category")
@@ -123,4 +137,4 @@ export const getExpenses = async function (): Promise<Expense[]> {
   }
 
   return data || [];
-};
+}
