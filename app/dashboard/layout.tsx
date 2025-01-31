@@ -10,6 +10,7 @@ import { dashboardConfig } from "@/config/dashboard";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
+import { Icons } from "@/components/Icons";
 
 interface DashboardLayoutProps {
   children?: React.ReactNode;
@@ -23,6 +24,7 @@ export default function Layout({ children }: DashboardLayoutProps) {
       <aside className="fixed left-0 top-0 z-30 hidden h-screen w-64 border-r bg-background md:block">
         <div className="flex h-16 items-center border-b px-6">
           <Link href="/dashboard" className="flex items-center space-x-2">
+            <Icons.logo className="h-6 w-6" />
             <span className="font-bold">Budget Buddy</span>
           </Link>
         </div>
@@ -45,13 +47,18 @@ export default function Layout({ children }: DashboardLayoutProps) {
                       href="/dashboard"
                       className="flex items-center space-x-2"
                     >
+                      <Icons.logo className="h-6 w-6" />
+
                       <span className="font-bold">Budget Buddy</span>
                     </Link>
                   </div>
                   <DashboardNav items={dashboardConfig.sidebarNav} />
                 </SheetContent>
               </Sheet>
-              <span className="md:hidden font-bold">Budget Buddy</span>
+              <span className="md:hidden font-bold flex items-center">
+                <Icons.logo className="h-6 w-6 mr-2" />
+                Budget Buddy
+              </span>
             </div>
             <div className="flex items-center space-x-4">
               <ThemeToggle />
@@ -59,8 +66,8 @@ export default function Layout({ children }: DashboardLayoutProps) {
             </div>
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto overflow-x-hidden">
-          <div className="container mx-auto p-6">{children}</div>
+        <main className="flex-1 overflow-y-auto">
+          <div className="container mx-auto max-w-6xl p-6">{children}</div>
         </main>
         <Footer className="border-t" />
       </div>
