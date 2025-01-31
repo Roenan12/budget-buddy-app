@@ -5,6 +5,12 @@ type ExpenseDetails = {
   amountSpent: number;
 };
 
+export type User = {
+  id: number;
+  fullName?: string;
+  email?: string;
+};
+
 export type Finance = {
   id: number;
   totalBudget: number;
@@ -137,4 +143,52 @@ export async function getExpenses(): Promise<Expense[]> {
   }
 
   return data || [];
+}
+
+export async function getUser(
+  email: string | null | undefined
+): Promise<User | null> {
+  try {
+    console.log("Checking for guest with email:", email);
+    const { data, error } = await supabase
+      .from("guests")
+      .select("*")
+      .eq("email", email)
+      .single();
+
+    if (error && error.code === "PGRST116") {
+      // No guest found
+      console.warn("No guest found with email:", email);
+      return null;
+    }
+
+    if (error) {
+      console.error("Unexpected getGuest error:", error);
+      throw new Error("Error fetching guest");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("getGuest failed:", error);
+    throw error;
+  }
+}
+
+export async function createUser(newUser: { email: string; fullName: string }) {
+  try {
+    console.log("Creating guest with data:", newUser);
+
+    const { data, error } = await supabase.from("guests").insert([newUser]);
+
+    if (error) {
+      console.error("createGuest error:", error);
+      throw new Error("Guest could not be created");
+    }
+
+    console.log("Guest created successfully:", data);
+    return data;
+  } catch (error) {
+    console.error("createGuest failed:", error);
+    throw error;
+  }
 }
