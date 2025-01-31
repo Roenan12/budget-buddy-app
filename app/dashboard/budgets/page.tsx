@@ -1,18 +1,10 @@
+import BudgetList from "@/components/BudgetList";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
-import BudgetList from "@/components/BudgetList";
 import Spinner from "@/components/ui/spinner";
-import { Suspense } from "react";
 import { Metadata } from "next";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Budgets",
