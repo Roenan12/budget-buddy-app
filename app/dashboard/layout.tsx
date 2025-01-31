@@ -7,7 +7,12 @@ import { Footer } from "@/components/Footer";
 import { UserNav } from "@/components/UserNav";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { dashboardConfig } from "@/config/dashboard";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { Icons } from "@/components/Icons";
@@ -42,6 +47,7 @@ export default function Layout({ children }: DashboardLayoutProps) {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-64 p-0">
+                  <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                   <div className="flex h-16 items-center border-b px-6">
                     <Link
                       href="/dashboard"
