@@ -72,8 +72,8 @@ export default function Layout({ children }: DashboardLayoutProps) {
             </div>
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto max-w-6xl p-6">{children}</div>
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="container mx-auto p-6">{children}</div>
         </main>
         <Footer className="border-t" />
       </div>
