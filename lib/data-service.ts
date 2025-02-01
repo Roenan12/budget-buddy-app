@@ -149,46 +149,46 @@ export async function getUser(
   email: string | null | undefined
 ): Promise<User | null> {
   try {
-    console.log("Checking for guest with email:", email);
+    console.log("Checking for user with email:", email);
     const { data, error } = await supabase
-      .from("guests")
+      .from("users")
       .select("*")
       .eq("email", email)
       .single();
 
     if (error && error.code === "PGRST116") {
-      // No guest found
-      console.warn("No guest found with email:", email);
+      // No user found
+      console.warn("No user found with email:", email);
       return null;
     }
 
     if (error) {
-      console.error("Unexpected getGuest error:", error);
-      throw new Error("Error fetching guest");
+      console.error("Unexpected getUser error:", error);
+      throw new Error("Error fetching user");
     }
 
     return data;
   } catch (error) {
-    console.error("getGuest failed:", error);
+    console.error("getUser failed:", error);
     throw error;
   }
 }
 
 export async function createUser(newUser: { email: string; fullName: string }) {
   try {
-    console.log("Creating guest with data:", newUser);
+    console.log("Creating user with data:", newUser);
 
-    const { data, error } = await supabase.from("guests").insert([newUser]);
+    const { data, error } = await supabase.from("users").insert([newUser]);
 
     if (error) {
-      console.error("createGuest error:", error);
-      throw new Error("Guest could not be created");
+      console.error("createUser error:", error);
+      throw new Error("User could not be created");
     }
 
-    console.log("Guest created successfully:", data);
+    console.log("User created successfully:", data);
     return data;
   } catch (error) {
-    console.error("createGuest failed:", error);
+    console.error("createUser failed:", error);
     throw error;
   }
 }

@@ -11,7 +11,7 @@ interface AuthOptions {
 }
 
 export async function signInAction(): Promise<void> {
-  const options: AuthOptions = { redirectTo: "/account" };
+  const options: AuthOptions = { redirectTo: "/dashboard" };
   await signIn("google", options);
 }
 
