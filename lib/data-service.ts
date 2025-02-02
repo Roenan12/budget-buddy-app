@@ -23,9 +23,12 @@ export type Finance = {
 
 export type Budget = {
   id: number;
+  created_at: string;
   name: string;
   amount: number;
   category: string;
+  expenseId: number;
+  userId: number;
   expenses: ExpenseDetails;
 };
 
@@ -35,6 +38,7 @@ export type Expense = {
   amountSpent: number;
   date: string;
   category: string;
+  userId: number;
 };
 
 export type Users = {
@@ -102,36 +106,70 @@ export async function getBudget(id: number): Promise<Budget | null> {
   return data;
 }
 
-export async function getBudgets(): Promise<Budget[]> {
-  const { data, error } = await supabase
-    .from("budgets")
-    .select(`id, name, amount, category, expenseId, expenses(amountSpent)`)
-    .order("id");
+export async function getBudgets(userId: number): Promise<Budget[]> {
+  try {
+    // Debug log
+    console.log("Attempting to fetch budgets for userId:", userId);
 
-  //for testing, delay for 2secs
-  // await new Promise((res) => setTimeout(res, 2000));
+    const { data, error } = await supabase
+      .from("budgets")
+      .select(
+        `
+        id,
+        created_at,
+        name,
+        amount,
+        category,
+        expenseId,
+        userId,
+        expenses!inner (
+          amountSpent
+        )
+      `
+      )
+      .eq("userId", userId);
 
-  if (error) {
-    console.error(error);
-    throw new Error("Budgets could not be loaded");
+    if (error) {
+      console.error("Supabase error:", {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
+      throw error;
+    }
+
+    if (!data || data.length === 0) {
+      console.log("No budgets found for userId:", userId);
+      return [];
+    }
+
+    console.log("Successfully retrieved budgets:", {
+      count: data.length,
+      sample: data[0],
+    });
+
+    const Budgets: Budget[] = data.map((budget) => ({
+      ...budget,
+      expenses: Array.isArray(budget.expenses)
+        ? budget.expenses[0]
+        : budget.expenses,
+    }));
+
+    return Budgets;
+  } catch (error) {
+    console.error("Error in getBudgets:", error);
+    throw new Error(
+      `Budgets could not be loaded: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
   }
-
-  if (!data) return [];
-
-  const Budgets: Budget[] = data.map((budget) => ({
-    ...budget,
-    expenses: Array.isArray(budget.expenses)
-      ? budget.expenses[0]
-      : budget.expenses,
-  }));
-
-  return Budgets;
 }
 
 export async function getExpenses(): Promise<Expense[]> {
   const { data, error } = await supabase
     .from("expenses")
-    .select("id, name, amountSpent, date, category")
+    .select("id, name, amountSpent, date, category, userId")
     .order("name");
 
   //for testing, delay for 2secs

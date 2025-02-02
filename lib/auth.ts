@@ -53,7 +53,7 @@ const authConfig: NextAuthConfig = {
         throw new Error("User not found");
       }
 
-      // session.user.userId = user.id;
+      session.user.userId = sessionUser.id;
       return session;
     },
   },
