@@ -1,5 +1,3 @@
-"use client";
-
 import { Budget } from "@/lib/data-service";
 import BudgetCard from "./BudgetCard";
 
