@@ -1,9 +1,10 @@
+import { Button } from "@/components/ui/button";
 import { signInAction } from "@/lib/actions";
 
 function SignInButton() {
   return (
     <form action={signInAction}>
-      <button className="flex items-center gap-6 text-lg border border-primary-300 px-10 py-4 font-medium">
+      <Button variant="outline" size="lg" className="w-full">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="https://authjs.dev/img/providers/google.svg"
@@ -11,8 +12,8 @@ function SignInButton() {
           height="24"
           width="24"
         />
-        <span>Continue with Google</span>
-      </button>
+        Google
+      </Button>
     </form>
   );
 }
