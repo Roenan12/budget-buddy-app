@@ -12,9 +12,9 @@ export const metadata = {
   title: "Login",
 };
 
-export default function LoginPage() {
+export default function Page() {
   return (
-    <div className="container flex h-screen w-screen flex-col items-center justify-center">
+    <div className="flex h-screen w-screen flex-col items-center justify-center">
       <Card className="w-[350px]">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-center gap-0 ">
