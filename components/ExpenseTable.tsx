@@ -39,14 +39,15 @@ function ExpenseTable({ expenses: initialExpenses }: { expenses: Expense[] }) {
           ? new Date(a.date).getTime() - new Date(b.date).getTime()
           : new Date(b.date).getTime() - new Date(a.date).getTime();
       }
-      if (field === "name" || field === "category") {
+      if (field === "budget") {
         return newDirection === "asc"
-          ? (a[field as keyof Expense] as string).localeCompare(
-              b[field as keyof Expense] as string
-            )
-          : (b[field as keyof Expense] as string).localeCompare(
-              a[field as keyof Expense] as string
-            );
+          ? a.budgets.budgetName.localeCompare(b.budgets.budgetName)
+          : b.budgets.budgetName.localeCompare(a.budgets.budgetName);
+      }
+      if (field === "name") {
+        return newDirection === "asc"
+          ? a.name.localeCompare(b.name)
+          : b.name.localeCompare(a.name);
       }
       return 0;
     });
@@ -93,10 +94,10 @@ function ExpenseTable({ expenses: initialExpenses }: { expenses: Expense[] }) {
               Date <SortIcon field="date" />
             </TableHead>
             <TableHead
-              onClick={() => handleSort("category")}
+              onClick={() => handleSort("budget")}
               className="cursor-pointer"
             >
-              Category <SortIcon field="category" />
+              Budget <SortIcon field="budget" />
             </TableHead>
             <TableHead></TableHead>
           </TableRow>
@@ -107,7 +108,7 @@ function ExpenseTable({ expenses: initialExpenses }: { expenses: Expense[] }) {
               <TableCell>{expense.name}</TableCell>
               <TableCell>${expense.amountSpent.toFixed(2)}</TableCell>
               <TableCell>{expense.date}</TableCell>
-              <TableCell>{expense.category}</TableCell>
+              <TableCell>{expense.budgets.budgetName}</TableCell>
               <TableCell>
                 <Button variant="secondary" size="icon" className="mr-2">
                   <Pencil />

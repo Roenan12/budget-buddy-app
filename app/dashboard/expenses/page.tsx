@@ -1,15 +1,30 @@
 import ExpenseForm from "@/components/ExpenseForm";
 import ExpenseTable from "@/components/ExpenseTable";
-import { getExpenses } from "@/lib/data-service";
+import { auth } from "@/lib/auth";
+import { getExpenses, getBudgets } from "@/lib/data-service";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Expenses",
+};
+
+export const revalidate = 0;
 
 export default async function Page() {
-  const expenses = await getExpenses();
+  const session = await auth();
+  if (!session?.user?.userId) {
+    throw new Error("User not authenticated");
+  }
+  const budgets = await getBudgets(session.user.userId);
+  if (!budgets) return;
+  const expenses = await getExpenses(session.user.userId);
+  if (!expenses) return;
 
   return (
     <div className="w-full p-4">
       <h1 className="text-2xl font-bold mb-4">Expenses</h1>
 
-      <ExpenseForm />
+      <ExpenseForm budgets={budgets} />
 
       <ExpenseTable expenses={expenses} />
     </div>
