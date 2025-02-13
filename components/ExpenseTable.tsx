@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -8,73 +10,143 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Expense, getExpenses } from "@/lib/data-service";
+import { Pencil, Trash, ChevronUp, ChevronDown } from "lucide-react";
 
-// Placeholder data
-const expenses = [
-  {
-    id: 1,
-    name: "Groceries",
-    amount: 50,
-    date: "2023-06-01",
-    category: "Food",
-  },
-  {
-    id: 2,
-    name: "Gas",
-    amount: 30,
-    date: "2023-06-02",
-    category: "Transportation",
-  },
-  {
-    id: 3,
-    name: "Movie tickets",
-    amount: 25,
-    date: "2023-06-03",
-    category: "Entertainment",
-  },
-  { id: 4, name: "Dinner", amount: 60, date: "2023-06-04", category: "Food" },
-  {
-    id: 5,
-    name: "Online shopping",
-    amount: 100,
-    date: "2023-06-05",
-    category: "Shopping",
-  },
-];
+const ITEMS_PER_PAGE = 5;
 
-function ExpenseTable() {
+function ExpenseTable({ expenses: initialExpenses }: { expenses: Expense[] }) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortField, setSortField] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
+
+  // Sorting function
+  const handleSort = (field: string) => {
+    const newDirection =
+      sortField === field && sortDirection === "asc" ? "desc" : "asc";
+    setSortDirection(newDirection);
+    setSortField(field);
+
+    const sortedExpenses = [...expenses].sort((a, b) => {
+      if (field === "amountSpent") {
+        return newDirection === "asc"
+          ? a[field] - b[field]
+          : b[field] - a[field];
+      }
+      if (field === "date") {
+        return newDirection === "asc"
+          ? new Date(a.date).getTime() - new Date(b.date).getTime()
+          : new Date(b.date).getTime() - new Date(a.date).getTime();
+      }
+      if (field === "name" || field === "category") {
+        return newDirection === "asc"
+          ? (a[field as keyof Expense] as string).localeCompare(
+              b[field as keyof Expense] as string
+            )
+          : (b[field as keyof Expense] as string).localeCompare(
+              a[field as keyof Expense] as string
+            );
+      }
+      return 0;
+    });
+
+    setExpenses(sortedExpenses);
+  };
+
+  // Pagination calculations
+  const totalPages = Math.ceil(expenses.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentExpenses = expenses.slice(startIndex, endIndex);
+
+  const SortIcon = ({ field }: { field: string }) => {
+    if (sortField !== field) return null;
+    return sortDirection === "asc" ? (
+      <ChevronUp className="inline w-4 h-4" />
+    ) : (
+      <ChevronDown className="inline w-4 h-4" />
+    );
+  };
+
   return (
-    <>
+    <div>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead
+              onClick={() => handleSort("name")}
+              className="cursor-pointer"
+            >
+              Name <SortIcon field="name" />
+            </TableHead>
+            <TableHead
+              onClick={() => handleSort("amountSpent")}
+              className="cursor-pointer"
+            >
+              Amount <SortIcon field="amountSpent" />
+            </TableHead>
+            <TableHead
+              onClick={() => handleSort("date")}
+              className="cursor-pointer"
+            >
+              Date <SortIcon field="date" />
+            </TableHead>
+            <TableHead
+              onClick={() => handleSort("category")}
+              className="cursor-pointer"
+            >
+              Category <SortIcon field="category" />
+            </TableHead>
+            <TableHead></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {expenses.map((expense) => (
+          {currentExpenses.map((expense) => (
             <TableRow key={expense.id}>
               <TableCell>{expense.name}</TableCell>
-              <TableCell>${expense.amount.toFixed(2)}</TableCell>
+              <TableCell>${expense.amountSpent.toFixed(2)}</TableCell>
               <TableCell>{expense.date}</TableCell>
               <TableCell>{expense.category}</TableCell>
               <TableCell>
-                <Button variant="outline" size="sm" className="mr-2">
-                  Edit
+                <Button variant="secondary" size="icon" className="mr-2">
+                  <Pencil />
                 </Button>
-                <Button variant="destructive" size="sm">
-                  Delete
+                <Button variant="destructive" size="icon">
+                  <Trash />
                 </Button>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-    </>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-4">
+        <div className="text-sm text-gray-500">
+          Showing {startIndex + 1}-{Math.min(endIndex, expenses.length)} of{" "}
+          {expenses.length} results
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+          >
+            &lt; Previous
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+            }
+            disabled={currentPage === totalPages}
+          >
+            Next &gt;
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 
