@@ -1,8 +1,10 @@
 import { supabase } from "./supabase";
 import { notFound } from "next/navigation";
 
-type ExpenseDetails = {
-  amountSpent: number;
+type BudgetDetails = {
+  id: number;
+  budgetName: string;
+  budgetAmount: number;
 };
 
 export type User = {
@@ -11,25 +13,16 @@ export type User = {
   email?: string;
 };
 
-export type Finance = {
-  id: number;
-  totalBudget: number;
-  totalExpenses: number;
-  totalRemainingBudget: number;
-  activeBudgets: number;
-  budgetId: number;
-  expenseId: number;
-};
-
 export type Budget = {
   id: number;
   created_at: string;
   name: string;
   amount: number;
   category: string;
-  expenseId: number;
   userId: number;
-  expenses: ExpenseDetails;
+  expenses: {
+    totalSpent: number;
+  };
 };
 
 export type Expense = {
@@ -37,8 +30,9 @@ export type Expense = {
   name: string;
   amountSpent: number;
   date: string;
-  category: string;
   userId: number;
+  budgetId: number;
+  budgets: BudgetDetails;
 };
 
 export type Users = {
@@ -46,47 +40,6 @@ export type Users = {
   fullName: string;
   email: string;
 };
-
-export async function getFinance(id: number): Promise<Finance | null> {
-  const { data, error } = await supabase
-    .from("finances")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (error) {
-    console.error(error);
-    throw new Error("Finance could not get loaded");
-  }
-
-  return data;
-}
-
-export async function getFinances(userId: number): Promise<Finance[]> {
-  const { data, error } = await supabase
-    .from("finances")
-    .select(
-      "id, totalBudget, totalExpenses, totalRemainingBudget, activeBudgets, budgetId, expenseId, budgets(name, amount), expenses(amountSpent)"
-    )
-    .eq("userId", userId)
-    .order("startDate");
-
-  if (error) {
-    console.error(error);
-    throw new Error("Finances could not get loaded");
-  }
-
-  if (!data) return [];
-
-  const Finances: Finance[] = data.map((finance) => ({
-    ...finance,
-    cabins: Array.isArray(finance.budgets)
-      ? finance.budgets[0]
-      : finance.budgets,
-  }));
-
-  return Finances;
-}
 
 export async function getBudget(id: number): Promise<Budget | null> {
   const { data, error } = await supabase
@@ -108,9 +61,6 @@ export async function getBudget(id: number): Promise<Budget | null> {
 
 export async function getBudgets(userId: number): Promise<Budget[]> {
   try {
-    // Debug log
-    console.log("Attempting to fetch budgets for userId:", userId);
-
     const { data, error } = await supabase
       .from("budgets")
       .select(
@@ -120,9 +70,8 @@ export async function getBudgets(userId: number): Promise<Budget[]> {
         name,
         amount,
         category,
-        expenseId,
         userId,
-        expenses!inner (
+        expenses (
           amountSpent
         )
       `
@@ -143,16 +92,15 @@ export async function getBudgets(userId: number): Promise<Budget[]> {
       return [];
     }
 
-    console.log("Successfully retrieved budgets:", {
-      count: data.length,
-      sample: data[0],
-    });
-
     const Budgets: Budget[] = data.map((budget) => ({
       ...budget,
-      expenses: Array.isArray(budget.expenses)
-        ? budget.expenses[0]
-        : budget.expenses,
+      expenses: {
+        totalSpent:
+          budget.expenses?.reduce(
+            (sum, expense) => sum + (expense.amountSpent || 0),
+            0
+          ) || 0,
+      },
     }));
 
     return Budgets;
@@ -166,21 +114,70 @@ export async function getBudgets(userId: number): Promise<Budget[]> {
   }
 }
 
-export async function getExpenses(): Promise<Expense[]> {
-  const { data, error } = await supabase
-    .from("expenses")
-    .select("id, name, amountSpent, date, category, userId")
-    .order("name");
+export async function getExpenses(userId: number): Promise<Expense[]> {
+  try {
+    const { data, error } = await supabase
+      .from("expenses")
+      .select(
+        `
+        id, 
+        name, 
+        amountSpent, 
+        date, 
+        userId, 
+        budgetId, 
+        budgets!inner(
+          id,
+          name,
+          amount
+        )
+      `
+      )
+      .eq("userId", userId);
 
-  //for testing, delay for 2secs
-  // await new Promise((res) => setTimeout(res, 2000));
+    if (error) {
+      console.error("Supabase error:", {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
+      throw error;
+    }
 
-  if (error) {
-    console.error(error);
-    throw new Error("Expenses could not be loaded");
+    if (!data || data.length === 0) {
+      console.log("No expenses found for userId:", userId);
+      return [];
+    }
+
+    console.log("Successfully retrieved expenses:", {
+      count: data.length,
+      sample: data[0],
+    });
+
+    const Expenses: Expense[] = data.map((expense) => ({
+      ...expense,
+      budgets: Array.isArray(expense.budgets)
+        ? {
+            id: expense.budgets[0].id,
+            budgetName: expense.budgets[0].name,
+            budgetAmount: expense.budgets[0].amount,
+          }
+        : {
+            id: (expense.budgets as any).id,
+            budgetName: (expense.budgets as any).name,
+            budgetAmount: (expense.budgets as any).amount,
+          },
+    }));
+
+    return Expenses;
+  } catch (error) {
+    console.error("Error in getExpenses:", error);
+    throw new Error(
+      `Expenses could not be loaded: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
   }
-
-  return data || [];
 }
 
 export async function getUser(

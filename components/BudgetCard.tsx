@@ -21,7 +21,7 @@ type BudgetCardProps = {
 function BudgetCard({ budget }: BudgetCardProps) {
   const { id, name, amount, category, expenses } = budget;
 
-  const amountSpent = expenses?.amountSpent || 0;
+  const amountSpent = expenses?.totalSpent || 0;
   const remainingAmount = amount - amountSpent;
 
   const progressPercentage = (amountSpent / amount) * 100;
