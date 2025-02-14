@@ -1,8 +1,10 @@
 import ExpenseForm from "@/components/ExpenseForm";
 import ExpenseTable from "@/components/ExpenseTable";
+import Spinner from "@/components/ui/spinner";
 import { auth } from "@/lib/auth";
 import { getExpenses, getBudgets } from "@/lib/data-service";
 import { Metadata } from "next";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Expenses",
@@ -26,7 +28,13 @@ export default async function Page() {
 
       <ExpenseForm budgets={budgets} />
 
-      <ExpenseTable expenses={expenses} />
+      <Suspense fallback={<Spinner />}>
+        {expenses.length === 0 ? (
+          <p className="text-lg">You have no expenses yet.</p>
+        ) : (
+          <ExpenseTable expenses={expenses} />
+        )}
+      </Suspense>
     </div>
   );
 }
