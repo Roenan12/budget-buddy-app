@@ -44,19 +44,37 @@ export type Users = {
 export async function getBudget(id: number): Promise<Budget | null> {
   const { data, error } = await supabase
     .from("budgets")
-    .select("*")
+    .select(
+      `
+      *,
+      expenses (
+        amountSpent
+      )
+    `
+    )
     .eq("id", id)
     .single();
-
-  //for testing, delay for 2secs
-  // await new Promise((res) => setTimeout(res, 2000));
 
   if (error) {
     console.error(error);
     notFound();
   }
 
-  return data;
+  if (data) {
+    return {
+      ...data,
+      expenses: {
+        totalSpent:
+          data.expenses?.reduce(
+            (sum: number, expense: { amountSpent: number }) =>
+              sum + (expense.amountSpent || 0),
+            0
+          ) || 0,
+      },
+    };
+  }
+
+  return null;
 }
 
 export async function getBudgets(userId: number): Promise<Budget[]> {

@@ -65,7 +65,7 @@ function BudgetCard({ budget }: BudgetCardProps) {
 
       <CardFooter>
         <Link
-          href={`budgets/${id}`}
+          href={`/dashboard/budgets/${id}`}
           className="w-full inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
         >
           View Details
