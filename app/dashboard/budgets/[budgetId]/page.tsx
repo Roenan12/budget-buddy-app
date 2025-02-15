@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { BackButton } from "@/components/BackButton";
 
 type Params = {
   params: {
@@ -45,10 +46,12 @@ export default async function Page({ params }: Params) {
 
   return (
     <div className="w-full p-4">
+      <BackButton href="/dashboard/budgets" label="Back to Budgets" />
+
       <Card className="max-w-3xl mx-auto">
         <CardContent className="p-6">
           <div className="flex justify-between items-stretch gap-6">
-            {/* Left side content */}
+            {/* Budget details */}
             <div className="flex-1 space-y-2">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-2xl font-semibold">
@@ -99,15 +102,19 @@ export default async function Page({ params }: Params) {
               </div>
             </div>
 
-            {/* Right side actions */}
+            {/* Actions */}
             <div className="flex flex-col w-[200px] -m-6 ml-0">
               <Button
+                asChild
                 variant="outline"
                 className="w-full h-1/2 justify-center gap-2 rounded-none border-b"
               >
-                <PencilIcon className="h-5 w-5" />
-                <span>Edit</span>
+                <Link href={`/dashboard/budgets/edit/${budget.id}`}>
+                  <PencilIcon className="h-5 w-5" />
+                  <span>Edit</span>
+                </Link>
               </Button>
+
               <Button
                 variant="outline"
                 className="w-full h-1/2 justify-center gap-2 rounded-none text-red-600 hover:text-red-700 hover:bg-red-50"

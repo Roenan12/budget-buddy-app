@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { auth, signIn, signOut } from "./auth";
 import { supabase } from "./supabase";
+import { getBudgets } from "./data-service";
 
 interface AuthOptions {
   redirectTo: string;
@@ -71,6 +72,45 @@ export async function createExpense(formData: FormData): Promise<void> {
 
   revalidatePath(`/dashboard/expenses`);
   redirect(`/dashboard/expenses`);
+}
+
+export async function updateBudget(formData: FormData): Promise<void> {
+  // Authentication
+  const session = await auth();
+  if (!session) throw new Error("Unauthorized");
+
+  const budgetId = Number(formData.get("budgetId"));
+
+  // Authorization
+  const userBudgets = await getBudgets(session.user.userId);
+
+  const userBudgetsIds = userBudgets.map((budget) => budget.id);
+
+  if (!userBudgetsIds.includes(budgetId)) {
+    throw new Error("You are not allowed to update this budget");
+  }
+
+  // update budget data
+  const name = formData.get("name") as string;
+  const amount = Number(formData.get("amount"));
+  const rawCategory = formData.get("category") as string;
+  const category = rawCategory.split(" (")[0];
+
+  const updateData = { name, amount, category };
+
+  // Mutation
+  const { error: updateError } = await supabase
+    .from("budgets")
+    .update(updateData)
+    .eq("id", budgetId)
+    .select()
+    .single();
+
+  if (updateError) throw new Error("Budget could not be updated");
+
+  // Revalidate and redirect
+  revalidatePath(`/dashboard/budgets/edit/${budgetId}`);
+  redirect(`/dashboard/budgets/${budgetId}`);
 }
 
 export async function signInAction(): Promise<void> {
