@@ -46,9 +46,11 @@ export default async function Page({ params }: Params) {
 
   return (
     <div className="w-full p-4">
-      <BackButton href="/dashboard/budgets" label="Back to Budgets" />
+      <div className="max-w-3xl">
+        <BackButton href="/dashboard/budgets" label="Back to Budgets" />
+      </div>
 
-      <Card className="max-w-3xl mx-auto">
+      <Card className="max-w-4xl">
         <CardContent className="p-6">
           <div className="flex justify-between items-stretch gap-6">
             {/* Budget details */}

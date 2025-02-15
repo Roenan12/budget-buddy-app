@@ -27,8 +27,8 @@ async function Page({ params }: { params: Params }) {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4"> Edit Budget {name}</h1>
-      <Card className="max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4"> Edit Budget: {name}</h1>
+      <Card className="max-w-3xl">
         <form action={updateBudget} className="space-y-4 md:space-y-0">
           <div className="flex items-start flex-col gap-4 my-5 px-10">
             <div>
