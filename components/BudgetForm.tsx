@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import SubmitButton from "@/components/SubmitButton";
-import { Input } from "@/components/ui/input";
+import { budgetCategories } from "@/lib/constants";
+import { createBudget } from "@/lib/actions";
+import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -11,25 +12,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createBudget } from "@/lib/actions";
-import { budgetCategories } from "@/lib/constants";
+import SubmitButton from "@/components/SubmitButton";
 
 function BudgetsForm() {
-  const [name, setName] = useState("");
-  const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState("");
-
-  const resetForm = () => {
-    setName("");
-    setAmount("");
-    setCategory("");
-  };
+  const { toast } = useToast();
 
   return (
     <form
       action={async (formData) => {
-        await createBudget(formData);
-        resetForm();
+        const result = await createBudget(formData);
+
+        if (result.success)
+          // success toast
+          toast({
+            title: "Success!",
+            variant: "success",
+            description: result.message,
+          });
+        // error toast
+        else
+          toast({
+            title: "Error!",
+            variant: "destructive",
+            description: result.message,
+          });
       }}
       className="space-y-4 md:space-y-0"
     >
@@ -38,14 +44,7 @@ function BudgetsForm() {
           <Label htmlFor="name" className="md:sr-only">
             Budget Name
           </Label>
-          <Input
-            id="name"
-            name="name"
-            placeholder="Budget Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
+          <Input id="name" name="name" placeholder="Budget Name" required />
         </div>
         <div className="flex-1">
           <Label htmlFor="amount" className="md:sr-only">
@@ -56,8 +55,6 @@ function BudgetsForm() {
             name="amount"
             type="number"
             placeholder="Amount"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
             required
           />
         </div>
@@ -65,12 +62,7 @@ function BudgetsForm() {
           <Label htmlFor="category" className="md:sr-only">
             Category
           </Label>
-          <Select
-            name="category"
-            value={category}
-            onValueChange={setCategory}
-            required
-          >
+          <Select name="category" required>
             <SelectTrigger>
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>

@@ -10,35 +10,42 @@ interface AuthOptions {
   redirectTo: string;
 }
 
-export async function createBudget(formData: FormData): Promise<void> {
-  const session = await auth();
-  if (!session) throw new Error("Unauthorized");
+export async function createBudget(
+  formData: FormData
+): Promise<{ success: boolean; message: any }> {
+  try {
+    const session = await auth();
+    if (!session) throw new Error("Unauthorized");
 
-  const name = formData.get("name") as string;
-  const amount = Number(formData.get("amount"));
-  const rawCategory = formData.get("category") as string;
-  const category = rawCategory.split(" (")[0];
+    const name = formData.get("name") as string;
+    const amount = Number(formData.get("amount"));
+    const rawCategory = formData.get("category") as string;
+    const category = rawCategory.split(" (")[0];
 
-  const { error: budgetError } = await supabase
-    .from("budgets")
-    .insert([
-      {
-        name,
-        amount,
-        category,
-        userId: session.user.userId,
-      },
-    ])
-    .select()
-    .single();
+    const { error: budgetError } = await supabase
+      .from("budgets")
+      .insert([
+        {
+          name,
+          amount,
+          category,
+          userId: session.user.userId,
+        },
+      ])
+      .select()
+      .single();
 
-  if (budgetError) {
-    console.error("Budget Error:", budgetError);
-    throw new Error("Budget could not be created");
+    if (budgetError) {
+      console.error("Budget Error:", budgetError);
+      return { success: false, message: "Budget could not be created" };
+    }
+
+    revalidatePath(`/dashboard/budgets`);
+    return { success: true, message: "Budget created successfully!" };
+  } catch (error) {
+    console.error("Error creating budget:", error);
+    throw new Error("An unexpected error occurred while creating the budget");
   }
-
-  revalidatePath(`/dashboard/budgets`);
-  redirect(`/dashboard/budgets`);
 }
 
 export async function createExpense(formData: FormData): Promise<void> {

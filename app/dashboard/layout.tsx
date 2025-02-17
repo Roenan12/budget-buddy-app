@@ -4,6 +4,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Icons } from "@/components/Icons";
 import { Sidebar } from "@/components/Sidebar";
 import type React from "react";
+import { Toaster } from "@/components/ui/toaster";
 
 interface DashboardLayoutProps {
   children?: React.ReactNode;
@@ -30,6 +31,7 @@ export default function Layout({ children }: DashboardLayoutProps) {
         </header>
         <main className="flex-1 overflow-y-auto overflow-x-hidden">
           <div className="container mx-auto p-6">{children}</div>
+          <Toaster />
         </main>
         <Footer className="border-t" />
       </div>

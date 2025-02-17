@@ -1,5 +1,5 @@
 import BudgetList from "@/components/BudgetList";
-import BudgetsForm from "@/components/BudgetsForm";
+import BudgetsForm from "@/components/BudgetForm";
 import Spinner from "@/components/ui/spinner";
 import { auth } from "@/lib/auth";
 import { getBudgets } from "@/lib/data-service";
