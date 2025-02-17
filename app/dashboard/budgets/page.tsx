@@ -17,7 +17,7 @@ export default async function Page() {
   if (!session) return;
 
   const budgets = await getBudgets(session?.user?.userId);
-  console.log(session?.user?.userId);
+  // console.log(session?.user?.userId);
   if (!budgets) return;
 
   return (

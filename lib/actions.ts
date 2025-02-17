@@ -37,48 +37,55 @@ export async function createBudget(
 
     if (budgetError) {
       console.error("Budget Error:", budgetError);
-      return { success: false, message: "Budget could not be created" };
+      return { success: false, message: `Failed to create budget ${name}` };
     }
 
     revalidatePath(`/dashboard/budgets`);
-    return { success: true, message: "Budget created successfully!" };
+    return { success: true, message: `Budget ${name} successfully created!` };
   } catch (error) {
     console.error("Error creating budget:", error);
     throw new Error("An unexpected error occurred while creating the budget");
   }
 }
 
-export async function createExpense(formData: FormData): Promise<void> {
-  const session = await auth();
-  if (!session) throw new Error("Unauthorized");
+export async function createExpense(
+  formData: FormData
+): Promise<{ success: boolean; message: any }> {
+  try {
+    const session = await auth();
+    if (!session) throw new Error("Unauthorized");
 
-  const name = formData.get("name") as string;
-  const amountSpent = Number(formData.get("amount"));
-  const date = formData.get("date") as string;
-  const budgetId = Number(formData.get("budgetId"));
+    const name = formData.get("name") as string;
+    const amountSpent = Number(formData.get("amount"));
+    const date = formData.get("date") as string;
+    const budgetId = Number(formData.get("budgetId"));
 
-  // Create the expense object without an ID
-  const newExpense = {
-    name,
-    amountSpent,
-    date,
-    budgetId,
-    userId: session.user.userId,
-  };
+    // Create the expense object without an ID
+    const newExpense = {
+      name,
+      amountSpent,
+      date,
+      budgetId,
+      userId: session.user.userId,
+    };
 
-  const { error: expenseError } = await supabase
-    .from("expenses")
-    .insert(newExpense) // Insert a single object, not an array
-    .select()
-    .single();
+    const { error: expenseError } = await supabase
+      .from("expenses")
+      .insert(newExpense) // Insert a single object, not an array
+      .select()
+      .single();
 
-  if (expenseError) {
-    console.error("Expense Error:", expenseError);
-    throw new Error(`Expense could not be created: ${expenseError.message}`);
+    if (expenseError) {
+      console.error("Expense Error:", expenseError.message);
+      return { success: false, message: `Failed to create expense ${name}` };
+    }
+
+    revalidatePath(`/dashboard/expenses`);
+    return { success: true, message: `Expense ${name} successfully created!` };
+  } catch (error) {
+    console.error("Error creating expense:", error);
+    throw new Error("An unexpected error occurred while creating the expense");
   }
-
-  revalidatePath(`/dashboard/expenses`);
-  redirect(`/dashboard/expenses`);
 }
 
 export async function updateBudget(formData: FormData): Promise<void> {

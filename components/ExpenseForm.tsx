@@ -1,7 +1,5 @@
 "use client";
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -14,30 +12,37 @@ import {
 import { Budget } from "@/lib/data-service";
 import { createExpense } from "@/lib/actions";
 import SubmitButton from "./SubmitButton";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface ExpenseFormProps {
   budgets: Budget[];
 }
 
 function ExpenseForm({ budgets }: ExpenseFormProps) {
-  const [name, setName] = useState("");
-  const [amount, setAmount] = useState("");
-  const [date, setDate] = useState("");
   const [selectedBudgetId, setSelectedBudgetId] = useState("");
-
-  const resetForm = () => {
-    setName("");
-    setAmount("");
-    setDate("");
-    setSelectedBudgetId("");
-  };
+  const { toast } = useToast();
 
   return (
     <form
       action={async (formData) => {
         formData.append("budgetId", selectedBudgetId);
-        await createExpense(formData);
-        resetForm();
+        const result = await createExpense(formData);
+
+        if (result.success)
+          // success toast
+          toast({
+            title: "Success!",
+            variant: "success",
+            description: result.message,
+          });
+        // error toast
+        else
+          toast({
+            title: "Error!",
+            variant: "destructive",
+            description: result.message,
+          });
       }}
       className="mb-8"
     >
@@ -45,35 +50,15 @@ function ExpenseForm({ budgets }: ExpenseFormProps) {
         {/* Existing form fields */}
         <div>
           <Label htmlFor="name">Expense Name</Label>
-          <Input
-            id="name"
-            name="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
+          <Input id="name" name="name" required />
         </div>
         <div>
           <Label htmlFor="amount">Amount</Label>
-          <Input
-            id="amount"
-            name="amount"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            type="number"
-            required
-          />
+          <Input id="amount" name="amount" type="number" required />
         </div>
         <div>
           <Label htmlFor="date">Date</Label>
-          <Input
-            id="date"
-            name="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            type="date"
-            required
-          />
+          <Input id="date" name="date" type="date" required />
         </div>
         <div>
           {/* Budget Selection */}
