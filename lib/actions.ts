@@ -37,11 +37,11 @@ export async function createBudget(
 
     if (budgetError) {
       console.error("Budget Error:", budgetError);
-      return { success: false, message: `Failed to create budget ${name}` };
+      return { success: false, message: `Failed to create budget: ${name}` };
     }
 
     revalidatePath(`/dashboard/budgets`);
-    return { success: true, message: `Budget ${name} successfully created!` };
+    return { success: true, message: `Budget: ${name} successfully created!` };
   } catch (error) {
     console.error("Error creating budget:", error);
     throw new Error("An unexpected error occurred while creating the budget");
@@ -77,54 +77,61 @@ export async function createExpense(
 
     if (expenseError) {
       console.error("Expense Error:", expenseError.message);
-      return { success: false, message: `Failed to create expense ${name}` };
+      return { success: false, message: `Failed to create expense: ${name}` };
     }
 
     revalidatePath(`/dashboard/expenses`);
-    return { success: true, message: `Expense ${name} successfully created!` };
+    return { success: true, message: `Expense: ${name} successfully created!` };
   } catch (error) {
     console.error("Error creating expense:", error);
     throw new Error("An unexpected error occurred while creating the expense");
   }
 }
 
-export async function updateBudget(formData: FormData): Promise<void> {
-  // Authentication
-  const session = await auth();
-  if (!session) throw new Error("Unauthorized");
+export async function updateBudget(
+  formData: FormData
+): Promise<{ success: boolean; message: string }> {
+  try {
+    // Authentication
+    const session = await auth();
+    if (!session) throw new Error("Unauthorized");
 
-  const budgetId = Number(formData.get("budgetId"));
+    const budgetId = Number(formData.get("budgetId"));
+    const userBudgets = await getBudgets(session.user.userId);
+    const userBudgetsIds = userBudgets.map((budget) => budget.id);
 
-  // Authorization
-  const userBudgets = await getBudgets(session.user.userId);
+    if (!userBudgetsIds.includes(budgetId)) {
+      throw new Error("You are not allowed to update this budget");
+    }
 
-  const userBudgetsIds = userBudgets.map((budget) => budget.id);
+    // Update budget
+    const name = formData.get("name") as string;
+    const amount = Number(formData.get("amount"));
+    const rawCategory = formData.get("category") as string;
+    const category = rawCategory.split(" (")[0];
+    const updateData = { name, amount, category };
 
-  if (!userBudgetsIds.includes(budgetId)) {
-    throw new Error("You are not allowed to update this budget");
+    const { error: updateError } = await supabase
+      .from("budgets")
+      .update(updateData)
+      .eq("id", budgetId)
+      .select()
+      .single();
+
+    if (updateError) throw new Error(`Failed to update budget: ${name}`);
+
+    // Revalidate cache
+    revalidatePath(`/dashboard/budgets/edit/${budgetId}`);
+    return {
+      success: true,
+      message: `Budget: ${name} has been updated successfully!`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.message || "Failed to update budget",
+    };
   }
-
-  // update budget data
-  const name = formData.get("name") as string;
-  const amount = Number(formData.get("amount"));
-  const rawCategory = formData.get("category") as string;
-  const category = rawCategory.split(" (")[0];
-
-  const updateData = { name, amount, category };
-
-  // Mutation
-  const { error: updateError } = await supabase
-    .from("budgets")
-    .update(updateData)
-    .eq("id", budgetId)
-    .select()
-    .single();
-
-  if (updateError) throw new Error("Budget could not be updated");
-
-  // Revalidate and redirect
-  revalidatePath(`/dashboard/budgets/edit/${budgetId}`);
-  redirect(`/dashboard/budgets/${budgetId}`);
 }
 
 export async function signInAction(): Promise<void> {
