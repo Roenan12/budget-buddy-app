@@ -134,6 +134,42 @@ export async function updateBudget(
   }
 }
 
+export async function deleteBudget(
+  budgetId: number
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const session = await auth();
+    if (!session) throw new Error("You must be logged in");
+
+    const userBudgets = await getBudgets(session.user.userId);
+    const userBudgetsIds = userBudgets.map((budget) => budget.id);
+
+    if (!userBudgetsIds.includes(budgetId)) {
+      throw new Error("You are not allowed to update this budget");
+    }
+
+    const { error } = await supabase
+      .from("budgets")
+      .delete()
+      .eq("id", budgetId);
+
+    if (error) {
+      throw new Error("Budget could not be deleted");
+    }
+
+    revalidatePath(`/dashboard/budgets/${budgetId}`);
+    return {
+      success: true,
+      message: `Budget successfully deleted`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.message || "Failed to delete budget",
+    };
+  }
+}
+
 export async function signInAction(): Promise<void> {
   const options: AuthOptions = { redirectTo: "/dashboard" };
   await signIn("google", options);
