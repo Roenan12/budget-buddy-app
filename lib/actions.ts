@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth, signIn, signOut } from "./auth";
 import { supabase } from "./supabase";
-import { getBudgets } from "./data-service";
+import { getBudgets, getExpenses } from "./data-service";
 
 interface AuthOptions {
   redirectTo: string;
@@ -39,7 +39,7 @@ export async function createBudget(
       return { success: false, message: `Failed to create budget: ${name}` };
     }
 
-    revalidatePath(`/dashboard/budgets`);
+    revalidatePath("/dashboard/budgets");
     return { success: true, message: `Budget: ${name} successfully created!` };
   } catch (error) {
     console.error("Error creating budget:", error);
@@ -55,7 +55,7 @@ export async function createExpense(
     if (!session) throw new Error("Unauthorized");
 
     const name = formData.get("name") as string;
-    const amountSpent = Number(formData.get("amount"));
+    const amountSpent = Number(formData.get("amountSpent"));
     const date = formData.get("date") as string;
     const budgetId = Number(formData.get("budgetId"));
 
@@ -79,7 +79,7 @@ export async function createExpense(
       return { success: false, message: `Failed to create expense: ${name}` };
     }
 
-    revalidatePath(`/dashboard/expenses`);
+    revalidatePath("/dashboard/expenses");
     return { success: true, message: `Expense: ${name} successfully created!` };
   } catch (error) {
     console.error("Error creating expense:", error);
@@ -129,6 +129,60 @@ export async function updateBudget(
     return {
       success: false,
       message: error.message || "Failed to update budget",
+    };
+  }
+}
+
+export async function updateExpense(
+  formData: FormData
+): Promise<{ success: boolean; message: string }> {
+  try {
+    // Authentication
+    const session = await auth();
+    if (!session) throw new Error("Unauthorized");
+
+    const budgetId = Number(formData.get("budgetId"));
+    const expenseId = Number(formData.get("expenseId"));
+    const userExpenses = await getExpenses(session.user.userId);
+    const userExpensesIds = userExpenses.map((expense) => expense.id);
+
+    if (!userExpensesIds.includes(expenseId)) {
+      throw new Error("You are not allowed to update this expense");
+    }
+
+    // Update expense
+    const name = formData.get("name") as string;
+    const amountSpent = Number(formData.get("amountSpent"));
+    const date = formData.get("date") as string;
+
+    const updateData = {
+      name,
+      amountSpent,
+      date,
+      budgetId,
+      userId: session.user.userId,
+    };
+    console.log(updateData);
+
+    const { error: updateError } = await supabase
+      .from("expenses")
+      .update(updateData)
+      .eq("id", expenseId)
+      .select()
+      .single();
+
+    if (updateError) throw new Error(`Failed to update expense: ${name}`);
+
+    // Revalidate cache
+    revalidatePath("/dashboard/expenses");
+    return {
+      success: true,
+      message: `Expense: ${name} has been updated successfully!`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.message || "Failed to update expense",
     };
   }
 }

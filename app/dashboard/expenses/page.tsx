@@ -32,7 +32,7 @@ export default async function Page() {
         {expenses.length === 0 ? (
           <p className="text-lg">You have no expenses yet.</p>
         ) : (
-          <ExpenseTable expenses={expenses} />
+          <ExpenseTable expenses={expenses} budgets={budgets} />
         )}
       </Suspense>
     </div>
