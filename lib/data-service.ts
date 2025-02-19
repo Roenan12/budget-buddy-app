@@ -152,7 +152,8 @@ export async function getExpenses(userId: number): Promise<Expense[]> {
         )
       `
       )
-      .eq("userId", userId);
+      .eq("userId", userId)
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Supabase error:", {
