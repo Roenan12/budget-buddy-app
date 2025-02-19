@@ -14,6 +14,7 @@ import { createExpense } from "@/lib/actions";
 import SubmitButton from "./SubmitButton";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 interface ExpenseFormProps {
   budgets: Budget[];
@@ -22,13 +23,13 @@ interface ExpenseFormProps {
 function ExpenseForm({ budgets }: ExpenseFormProps) {
   const [selectedBudgetId, setSelectedBudgetId] = useState("");
   const [name, setName] = useState("");
-  const [amount, setAmount] = useState("");
+  const [amountSpent, setAmountSpent] = useState("");
   const [date, setDate] = useState("");
   const { toast } = useToast();
 
   const resetForm = () => {
     setName("");
-    setAmount("");
+    setAmountSpent("");
     setDate("");
     setSelectedBudgetId("");
   };
@@ -74,11 +75,11 @@ function ExpenseForm({ budgets }: ExpenseFormProps) {
         <div>
           <Label htmlFor="amount">Amount</Label>
           <Input
-            id="amount"
-            name="amount"
+            id="amountSpent"
+            name="amountSpent"
             placeholder="e.g. 100.50"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            value={amountSpent}
+            onChange={(e) => setAmountSpent(e.target.value)}
             type="number"
             required
           />
@@ -99,7 +100,7 @@ function ExpenseForm({ budgets }: ExpenseFormProps) {
           <div>
             <Label htmlFor="budget">Budget</Label>
             <Select
-              name="budget"
+              name="budgetId"
               value={selectedBudgetId}
               onValueChange={setSelectedBudgetId}
               required
