@@ -9,8 +9,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Expense, getExpenses } from "@/lib/data-service";
+import { Expense } from "@/lib/data-service";
 import { Pencil, Trash, ChevronUp, ChevronDown } from "lucide-react";
 
 const ITEMS_PER_PAGE = 5;
@@ -95,7 +102,7 @@ function ExpenseTable({ expenses: initialExpenses }: { expenses: Expense[] }) {
             </TableHead>
             <TableHead
               onClick={() => handleSort("budget")}
-              className="cursor-pointer"
+              className="cursor-pointer text-center"
             >
               Budget <SortIcon field="budget" />
             </TableHead>
@@ -108,14 +115,37 @@ function ExpenseTable({ expenses: initialExpenses }: { expenses: Expense[] }) {
               <TableCell>{expense.name}</TableCell>
               <TableCell>${expense.amountSpent.toFixed(2)}</TableCell>
               <TableCell>{expense.date}</TableCell>
-              <TableCell>{expense.budgets.budgetName}</TableCell>
-              <TableCell>
+              <TableCell className="text-center">
+                {expense.budgets.budgetName}
+              </TableCell>
+              <TableCell className="hidden md:flex justify-center items-center">
                 <Button variant="secondary" size="icon" className="mr-2">
                   <Pencil />
                 </Button>
                 <Button variant="destructive" size="icon">
                   <Trash />
                 </Button>
+              </TableCell>
+
+              {/* Mobile Actions */}
+              <TableCell className="md:hidden">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="h-8 w-8 p-0">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem>
+                      <Pencil className="h-5 w-5" />
+                      <span>Edit</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className=" text-red-600 focus:text-red-600 focus:bg-red-50">
+                      <Trash className="h-5 w-5" />
+                      <span>Delete</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TableCell>
             </TableRow>
           ))}
