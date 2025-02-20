@@ -95,7 +95,11 @@ function BudgetsForm() {
             </SelectContent>
           </Select>
         </div>
-        <SubmitButton pendingLabel="Adding budget...">Add Budget</SubmitButton>
+        <div className="mt-auto">
+          <SubmitButton pendingLabel="Adding budget..." fullWidth>
+            Add Budget
+          </SubmitButton>
+        </div>
       </div>
     </form>
   );

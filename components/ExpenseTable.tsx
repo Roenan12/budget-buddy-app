@@ -1,67 +1,31 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  MoreVertical,
-  Pencil,
-  Trash,
-  ChevronUp,
-  ChevronDown,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Budget, Expense } from "@/lib/data-service";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogOverlay,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "./ui/label";
-import { Input } from "./ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import SubmitButton from "./SubmitButton";
-import { updateExpense } from "@/lib/actions";
-import { useToast } from "@/hooks/use-toast";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { useEffect, useState } from "react";
+import ExpenseTableRow from "./ExpenseTableRow";
 
 const ITEMS_PER_PAGE = 5;
 
 function ExpenseTable({
   expenses: initialExpenses,
-  budgets: budgets,
+  budgets,
 }: {
   expenses: Expense[];
   budgets: Budget[];
 }) {
-  const [selectedBudgetId, setSelectedBudgetId] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
-  const { toast } = useToast();
 
   // ensure the state is not stale by setting the expenses to the latest value
   useEffect(() => {
@@ -151,147 +115,11 @@ function ExpenseTable({
         </TableHeader>
         <TableBody>
           {currentExpenses.map((expense) => (
-            <TableRow key={expense.id}>
-              <TableCell>{expense.name}</TableCell>
-              <TableCell>${expense.amountSpent.toFixed(2)}</TableCell>
-              <TableCell>{expense.date}</TableCell>
-              <TableCell className="text-center">
-                {expense.budgets.budgetName}
-              </TableCell>
-              <TableCell className="hidden md:flex justify-center items-center">
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                  <DialogOverlay />
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className="mr-2"
-                      onClick={() => {
-                        setSelectedExpense(expense);
-                        setIsDialogOpen(true);
-                      }}
-                    >
-                      <Pencil />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Edit Expense</DialogTitle>
-                    </DialogHeader>
-                    <form
-                      action={async (formData) => {
-                        formData.append("budgetId", selectedBudgetId);
-                        const result = await updateExpense(formData);
-
-                        if (result.success) {
-                          // success toast
-                          toast({
-                            title: "Success!",
-                            variant: "success",
-                            description: result.message,
-                          });
-                          setIsDialogOpen(false);
-                        } else {
-                          // error toast
-                          toast({
-                            title: "Error!",
-                            variant: "destructive",
-                            description: result.message,
-                          });
-                        }
-                      }}
-                      className="space-y-4"
-                    >
-                      {/* Hidden input to store the selected expense ID */}
-                      <Input
-                        type="hidden"
-                        name="expenseId"
-                        value={selectedExpense?.id || ""}
-                      />
-                      <Label>Name</Label>
-                      <Input
-                        type="text"
-                        name="name"
-                        defaultValue={selectedExpense?.name || ""}
-                      />
-                      <Label>Amount</Label>
-                      <Input
-                        type="number"
-                        name="amountSpent"
-                        defaultValue={selectedExpense?.amountSpent || 0}
-                      />
-                      <Label>Date</Label>
-                      <Input
-                        type="date"
-                        name="date"
-                        defaultValue={selectedExpense?.date || ""}
-                      />
-                      <Label htmlFor="budget">Budget</Label>
-                      <Select
-                        name="budgetId"
-                        defaultValue={
-                          selectedExpense?.budgets.id.toString() || ""
-                        }
-                        onValueChange={setSelectedBudgetId}
-                        required
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a budget" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {budgets.map((budget) => (
-                            <SelectItem
-                              key={budget.id}
-                              value={budget.id.toString()}
-                            >
-                              {budget.name} ($
-                              {budget.amount -
-                                (budget.expenses?.totalSpent || 0)}{" "}
-                              remaining)
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <SubmitButton
-                        pendingLabel="Updating expense..."
-                        fullWidth
-                      >
-                        Update expense
-                      </SubmitButton>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-                <Button variant="destructive" size="icon">
-                  <Trash />
-                </Button>
-              </TableCell>
-
-              {/* Mobile Actions */}
-              <TableCell className="md:hidden">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="h-8 w-8 p-0">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => {
-                        setSelectedExpense(expense);
-                        setIsDialogOpen(true);
-                      }}
-                    >
-                      <Pencil className="h-5 w-5" />
-                      <span>Edit</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className=" text-red-600 focus:text-red-600 focus:bg-red-50">
-                      <Trash className="h-5 w-5" />
-                      <span>Delete</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
+            <ExpenseTableRow
+              key={expense.id}
+              expense={expense}
+              budgets={budgets}
+            />
           ))}
         </TableBody>
       </Table>
