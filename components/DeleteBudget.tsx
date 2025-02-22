@@ -57,9 +57,7 @@ function DeleteBudget({ budgetId, onDelete }: DeleteBudgetProps) {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleDelete}>
-            {isPending ? <SpinnerMini /> : "Delete"}
-          </AlertDialogAction>
+          <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

@@ -19,29 +19,32 @@ import { TrashIcon } from "lucide-react";
 type DeleteExpenseProps = {
   expenseId: number;
   onDelete: (expenseId: number) => void;
+  trigger?: React.ReactNode;
 };
 
-function DeleteExpense({ expenseId, onDelete }: DeleteExpenseProps) {
+function DeleteExpense({ expenseId, onDelete, trigger }: DeleteExpenseProps) {
   const [isPending, startTransition] = useTransition();
 
   function handleDelete() {
     startTransition(() => onDelete(expenseId));
   }
 
+  const defaultTrigger = (
+    <Button variant="destructive" size="icon">
+      {!isPending ? (
+        <TrashIcon />
+      ) : (
+        <span className="mx-auto">
+          <SpinnerMini />
+        </span>
+      )}
+    </Button>
+  );
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="icon">
-          {!isPending ? (
-            <>
-              <TrashIcon />
-            </>
-          ) : (
-            <span className="mx-auto">
-              <SpinnerMini />
-            </span>
-          )}
-        </Button>
+        {trigger || defaultTrigger}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -53,9 +56,7 @@ function DeleteExpense({ expenseId, onDelete }: DeleteExpenseProps) {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleDelete}>
-            {isPending ? <SpinnerMini /> : "Delete"}
-          </AlertDialogAction>
+          <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

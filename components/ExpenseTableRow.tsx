@@ -29,6 +29,7 @@ interface ExpenseTableRowProps {
 
 function ExpenseTableRow({ expense, budgets }: ExpenseTableRowProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const { toast } = useToast();
 
@@ -48,6 +49,11 @@ function ExpenseTableRow({ expense, budgets }: ExpenseTableRowProps) {
       });
     }
   }
+
+  const handleEditClick = () => {
+    setIsDropdownOpen(false); // Close dropdown when opening dialog
+    setIsDialogOpen(true);
+  };
 
   return (
     <TableRow>
@@ -87,23 +93,43 @@ function ExpenseTableRow({ expense, budgets }: ExpenseTableRowProps) {
 
       {/* Mobile Actions */}
       <TableCell className="md:hidden">
-        <DropdownMenu>
+        <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="h-8 w-8 p-0">
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setIsDialogOpen(true)}>
+            <DropdownMenuItem onClick={handleEditClick}>
               <Pencil className="h-5 w-5" />
               <span>Edit</span>
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-red-600 focus:text-red-600 focus:bg-red-50">
-              <Trash className="h-5 w-5" />
-              <span>Delete</span>
-            </DropdownMenuItem>
+
+            <DeleteExpense
+              expenseId={expense.id}
+              onDelete={handleDelete}
+              trigger={
+                <div className="relative flex cursor-pointer select-none items-center rounded-sm px-1 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-red-600 focus:text-red-600 focus:bg-red-50">
+                  <Trash className="h-5 w-5 mr-2" />
+                  <span>Delete</span>
+                </div>
+              }
+            />
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Expense</DialogTitle>
+            </DialogHeader>
+            <UpdateExpenseForm
+              expense={expense}
+              budgets={budgets}
+              onSuccess={() => setIsDialogOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </TableCell>
     </TableRow>
   );
