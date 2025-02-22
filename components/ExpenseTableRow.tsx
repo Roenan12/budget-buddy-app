@@ -18,6 +18,9 @@ import {
 import { MoreVertical, Pencil, Trash } from "lucide-react";
 import { Budget, Expense } from "@/lib/data-service";
 import UpdateExpenseForm from "./UpdateExpenseForm";
+import { deleteExpense } from "@/lib/actions";
+import { useToast } from "@/hooks/use-toast";
+import DeleteExpense from "./DeleteExpense";
 
 interface ExpenseTableRowProps {
   expense: Expense;
@@ -26,6 +29,25 @@ interface ExpenseTableRowProps {
 
 function ExpenseTableRow({ expense, budgets }: ExpenseTableRowProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const { toast } = useToast();
+
+  async function handleDelete(expenseId: number) {
+    const result = await deleteExpense(expenseId);
+    if (result.success) {
+      toast({
+        title: "Success!",
+        variant: "success",
+        description: result.message,
+      });
+    } else {
+      toast({
+        title: "Error!",
+        variant: "destructive",
+        description: result.message,
+      });
+    }
+  }
 
   return (
     <TableRow>
@@ -59,9 +81,8 @@ function ExpenseTableRow({ expense, budgets }: ExpenseTableRowProps) {
             />
           </DialogContent>
         </Dialog>
-        <Button variant="destructive" size="icon">
-          <Trash />
-        </Button>
+
+        <DeleteExpense expenseId={expense.id} onDelete={handleDelete} />
       </TableCell>
 
       {/* Mobile Actions */}

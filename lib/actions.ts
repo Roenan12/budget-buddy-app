@@ -223,6 +223,39 @@ export async function deleteBudget(
   }
 }
 
+export async function deleteExpense(
+  expenseId: number
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const session = await auth();
+    if (!session) throw new Error("You must be logged in");
+
+    const userExpenses = await getExpenses(session.user.userId);
+    const userExpensesIds = userExpenses.map((expense) => expense.id);
+
+    if (!userExpensesIds.includes(expenseId)) {
+      throw new Error("You are not allowed to delete this expense");
+    }
+    const { error } = await supabase
+      .from("expenses")
+      .delete()
+      .eq("id", expenseId);
+
+    if (error) throw new Error("Expense could not be deleted");
+
+    revalidatePath("/dashboard/expenses");
+    return {
+      success: true,
+      message: `Expense successfully deleted`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.message || "Failed to delete expense",
+    };
+  }
+}
+
 export async function signInAction(): Promise<void> {
   const options: AuthOptions = { redirectTo: "/dashboard" };
   await signIn("google", options);
