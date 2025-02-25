@@ -200,6 +200,68 @@ export async function getExpenses(userId: number): Promise<Expense[]> {
   }
 }
 
+export async function getRecentExpenses(userId: number): Promise<Expense[]> {
+  try {
+    const { data, error } = await supabase
+      .from("expenses")
+      .select(
+        `
+        id, 
+        name, 
+        amountSpent, 
+        date, 
+        userId, 
+        budgetId, 
+        budgets!inner(
+          id,
+          name,
+          amount
+        )
+      `
+      )
+      .eq("userId", userId)
+      .order("created_at", { ascending: false })
+      .limit(10); // Only fetch 10 records
+
+    if (error) {
+      console.error("Supabase error:", {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+      });
+      throw error;
+    }
+
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    const Expenses: Expense[] = data.map((expense) => ({
+      ...expense,
+      budgets: Array.isArray(expense.budgets)
+        ? {
+            id: expense.budgets[0].id,
+            budgetName: expense.budgets[0].name,
+            budgetAmount: expense.budgets[0].amount,
+          }
+        : {
+            id: (expense.budgets as any).id,
+            budgetName: (expense.budgets as any).name,
+            budgetAmount: (expense.budgets as any).amount,
+          },
+    }));
+
+    return Expenses;
+  } catch (error) {
+    console.error("Error in getRecentExpenses:", error);
+    throw new Error(
+      `Recent expenses could not be loaded: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
+  }
+}
+
 export async function getUser(
   email: string | null | undefined
 ): Promise<User | null> {

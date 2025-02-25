@@ -43,7 +43,7 @@ export default async function Page() {
             <CardDescription>Your latest personal expenses</CardDescription>
           </CardHeader>
           <CardContent>
-            <RecentExpenses />
+            <RecentExpenses userId={session?.user?.userId} />
           </CardContent>
         </Card>
       </div>
