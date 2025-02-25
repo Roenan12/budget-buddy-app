@@ -1,4 +1,4 @@
-import { BudgetGraph } from "@/components/BudgetGraph";
+import BudgetChart from "@/components/BudgetChart";
 import { RecentExpenses } from "@/components/RecentExpenses";
 import StatsCard from "@/components/StatsCard";
 
@@ -28,10 +28,13 @@ export default async function Page() {
       <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
         <Card className="md:col-span-1">
           <CardHeader>
-            <CardTitle>BudgetGraph</CardTitle>
+            <CardTitle>Budget Overview</CardTitle>
+            <CardDescription>
+              Monthly budget and expenses breakdown
+            </CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
-            <BudgetGraph />
+            <BudgetChart budgets={budgets} />
           </CardContent>
         </Card>
         <Card className="md:col-span-1">

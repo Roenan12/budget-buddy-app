@@ -95,7 +95,7 @@ export async function getBudgets(userId: number): Promise<Budget[]> {
       `
       )
       .eq("userId", userId)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: true });
 
     if (error) {
       console.error("Supabase error:", {
