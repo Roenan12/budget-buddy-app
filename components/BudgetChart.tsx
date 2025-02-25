@@ -23,6 +23,11 @@ function BudgetChart({ budgets }: { budgets: Budget[] }) {
     month: new Date(budget.created_at).toLocaleString("default", {
       month: "long",
     }),
+    fullDate: new Date(budget.created_at).toLocaleDateString("default", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }),
     budget: budget.amount,
     expenses: budget.expenses.totalSpent,
   }));
@@ -64,7 +69,17 @@ function BudgetChart({ budgets }: { budgets: Budget[] }) {
             />
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent indicator="dot" />}
+              content={
+                <ChartTooltipContent
+                  indicator="dot"
+                  labelFormatter={(label, payload) => {
+                    if (payload && payload[0]) {
+                      return payload[0].payload.fullDate;
+                    }
+                    return label;
+                  }}
+                />
+              }
             />
             <Area
               dataKey="expenses"
