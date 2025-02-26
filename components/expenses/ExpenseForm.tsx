@@ -13,114 +13,164 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { createExpense } from "@/lib/actions";
 import { Budget } from "@/lib/data-service";
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+
+// Move the schema creation into a function that takes budgets as a parameter
+const createExpenseFormSchema = (budgets: Budget[]) =>
+  z
+    .object({
+      name: z
+        .string()
+        .min(1, "Expense name is required")
+        .max(25, "Expense name cannot exceed 25 characters")
+        .trim(),
+      amountSpent: z
+        .string()
+        .min(1, "Amount is required")
+        .regex(/^\d*\.?\d*$/, "Must be a valid number"),
+      date: z.string().min(1, "Date is required"),
+      budgetId: z.string().min(1, "Budget is required"),
+    })
+    .refine(
+      (data) => {
+        // Skip validation if no budget is selected or amount is invalid
+        if (!data.budgetId || !data.amountSpent) return true;
+
+        const selectedBudget = budgets.find(
+          (budget) => budget.id.toString() === data.budgetId
+        );
+        if (!selectedBudget) return true;
+
+        const remainingAmount =
+          selectedBudget.amount - (selectedBudget.expenses?.totalSpent || 0);
+        return Number(data.amountSpent) <= remainingAmount;
+      },
+      {
+        message: "Amount cannot exceed remaining budget",
+        path: ["amountSpent"],
+      }
+    );
+
+type ExpenseFormValues = z.infer<ReturnType<typeof createExpenseFormSchema>>;
 
 interface ExpenseFormProps {
   budgets: Budget[];
 }
 
 function ExpenseForm({ budgets }: ExpenseFormProps) {
-  const [selectedBudgetId, setSelectedBudgetId] = useState("");
-  const [name, setName] = useState("");
-  const [amountSpent, setAmountSpent] = useState("");
-  const [date, setDate] = useState("");
   const { toast } = useToast();
+  const form = useForm<ExpenseFormValues>({
+    resolver: zodResolver(createExpenseFormSchema(budgets)),
+    defaultValues: {
+      name: "",
+      amountSpent: "",
+      date: "",
+      budgetId: "",
+    },
+  });
 
-  const resetForm = () => {
-    setName("");
-    setAmountSpent("");
-    setDate("");
-    setSelectedBudgetId("");
+  const onSubmit = async (data: ExpenseFormValues) => {
+    const formData = new FormData();
+    formData.append("name", data.name);
+    formData.append("amountSpent", data.amountSpent);
+    formData.append("date", data.date);
+    formData.append("budgetId", data.budgetId);
+
+    const result = await createExpense(formData);
+
+    if (result.success) {
+      toast({
+        title: "Success!",
+        variant: "success",
+        description: result.message,
+      });
+      form.reset();
+    } else {
+      toast({
+        title: "Error!",
+        variant: "destructive",
+        description: result.message,
+      });
+    }
   };
 
   return (
-    <form
-      action={async (formData) => {
-        formData.append("budgetId", selectedBudgetId);
-        const result = await createExpense(formData);
-
-        if (result.success) {
-          // success toast
-          toast({
-            title: "Success!",
-            variant: "success",
-            description: result.message,
-          });
-          resetForm();
-          // error toast
-        } else {
-          toast({
-            title: "Error!",
-            variant: "destructive",
-            description: result.message,
-          });
-        }
-      }}
-      className="mb-8"
-    >
+    <form onSubmit={form.handleSubmit(onSubmit)} className="mb-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-4">
-        {/* Existing form fields */}
         <div>
           <Label htmlFor="name">Expense Name</Label>
           <Input
             id="name"
-            name="name"
             placeholder="e.g. clothes"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
+            {...form.register("name")}
           />
+          {form.formState.errors.name && (
+            <p className="text-sm text-red-500 mt-1">
+              {form.formState.errors.name.message}
+            </p>
+          )}
         </div>
         <div>
-          <Label htmlFor="amount">Amount</Label>
+          <Label htmlFor="amountSpent">Amount</Label>
           <Input
             id="amountSpent"
-            name="amountSpent"
             placeholder="e.g. 100.50"
-            value={amountSpent}
-            onChange={(e) => setAmountSpent(e.target.value)}
-            type="number"
-            required
+            {...form.register("amountSpent")}
           />
+          {form.formState.errors.amountSpent && (
+            <p className="text-sm text-red-500 mt-1">
+              {form.formState.errors.amountSpent.message}
+            </p>
+          )}
         </div>
         <div>
           <Label htmlFor="date">Date</Label>
-          <Input
-            id="date"
-            name="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            type="date"
-            required
-          />
+          <Input id="date" type="date" {...form.register("date")} />
+          {form.formState.errors.date && (
+            <p className="text-sm text-red-500 mt-1">
+              {form.formState.errors.date.message}
+            </p>
+          )}
         </div>
         <div>
-          {/* Budget Selection */}
-          <div>
-            <Label htmlFor="budget">Budget</Label>
-            <Select
-              name="budgetId"
-              value={selectedBudgetId}
-              onValueChange={setSelectedBudgetId}
-              required
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a budget" />
-              </SelectTrigger>
-              <SelectContent>
-                {budgets.map((budget) => (
-                  <SelectItem key={budget.id} value={budget.id.toString()}>
-                    {budget.name} ($
-                    {budget.amount - (budget.expenses?.totalSpent || 0)}{" "}
-                    remaining)
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <Label htmlFor="budget">Budget</Label>
+          <Select
+            value={form.watch("budgetId")}
+            onValueChange={(value) => form.setValue("budgetId", value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select a budget" />
+            </SelectTrigger>
+            <SelectContent>
+              {budgets.map((budget) => (
+                <SelectItem key={budget.id} value={budget.id.toString()}>
+                  {budget.name} ($
+                  {budget.amount - (budget.expenses?.totalSpent || 0)}{" "}
+                  remaining)
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {form.formState.errors.budgetId && (
+            <p className="text-sm text-red-500 mt-1">
+              {form.formState.errors.budgetId.message}
+            </p>
+          )}
         </div>
-        <div className="sm:col-span-2 lg:col-span-1 mt-auto">
-          <SubmitButton pendingLabel="Adding expense..." fullWidth>
+        <div
+          className={`sm:col-span-2 lg:col-span-1 ${
+            Object.keys(form.formState.errors).length > 0
+              ? "my-auto"
+              : "mt-auto"
+          }`}
+        >
+          <SubmitButton
+            pendingLabel="Adding expense..."
+            fullWidth
+            disabled={form.formState.isSubmitting}
+          >
             Add Expense
           </SubmitButton>
         </div>
