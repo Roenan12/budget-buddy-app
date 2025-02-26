@@ -15,7 +15,26 @@ import { useToast } from "@/hooks/use-toast";
 import { updateBudget } from "@/lib/actions";
 import { budgetCategories } from "@/lib/constants";
 import { Budget } from "@/lib/data-service";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+
+// Define the form validation schema
+const updateBudgetFormSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Budget name is required")
+    .max(25, "Budget name cannot exceed 25 characters")
+    .trim(),
+  amount: z
+    .string()
+    .min(1, "Amount is required")
+    .regex(/^\d*\.?\d*$/, "Must be a valid number"),
+  category: z.string().min(1, "Category is required"),
+});
+
+type UpdateBudgetFormValues = z.infer<typeof updateBudgetFormSchema>;
 
 type UpdateBudgetFormProps = {
   budgetId: number;
@@ -27,73 +46,85 @@ function UpdateBudgetForm({ budgetId, budget }: UpdateBudgetFormProps) {
   const { toast } = useToast();
   const router = useRouter();
 
+  const form = useForm<UpdateBudgetFormValues>({
+    resolver: zodResolver(updateBudgetFormSchema),
+    defaultValues: {
+      name: name,
+      amount: amount.toString(),
+      category:
+        budgetCategories.find((ctg) => ctg.startsWith(category)) || category,
+    },
+  });
+
+  const onSubmit = async (data: UpdateBudgetFormValues) => {
+    const formData = new FormData();
+    formData.append("budgetId", budgetId.toString());
+    formData.append("name", data.name);
+    formData.append("amount", data.amount);
+    formData.append("category", data.category);
+
+    const result = await updateBudget(formData);
+
+    if (result.success) {
+      toast({
+        title: "Success!",
+        variant: "success",
+        description: result.message,
+      });
+      router.push(`/dashboard/budgets/${budgetId}`);
+    } else {
+      toast({
+        title: "Error!",
+        variant: "destructive",
+        description: result.message,
+      });
+    }
+  };
+
   return (
     <>
-      <h1 className="text-2xl font-bold mb-4"> Edit Budget: {name}</h1>
+      <h1 className="text-2xl font-bold mb-4">Edit Budget: {name}</h1>
       <Card className="max-w-3xl">
         <form
-          action={async (formData) => {
-            const result = await updateBudget(formData);
-
-            if (result.success) {
-              // success toast
-              toast({
-                title: "Success!",
-                variant: "success",
-                description: result.message,
-              });
-              // redirect to budget details
-              router.push(`/dashboard/budgets/${budgetId}`);
-            } else {
-              // error toast
-              toast({
-                title: "Error!",
-                variant: "destructive",
-                description: result.message,
-              });
-            }
-          }}
+          onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-4 md:space-y-0"
         >
           <div className="flex items-start flex-col gap-4 my-5 px-10">
-            <div>
-              <input type="hidden" value={budgetId} name="budgetId" />
-            </div>
             <div className="w-full">
-              <Label htmlFor="name" className="md:sr-only">
-                Budget Name
-              </Label>
+              <Label htmlFor="name">Budget Name</Label>
               <Input
                 id="name"
-                name="name"
                 placeholder="Budget Name"
-                defaultValue={name}
-                required
+                {...form.register("name")}
               />
+              {form.formState.errors.name && (
+                <p className="text-sm text-red-500 mt-1">
+                  {form.formState.errors.name.message}
+                </p>
+              )}
             </div>
             <div className="w-full">
-              <Label htmlFor="amount" className="md:sr-only">
-                Amount
-              </Label>
+              <Label htmlFor="amount">Amount</Label>
               <Input
                 id="amount"
-                name="amount"
-                type="number"
                 placeholder="Amount"
-                defaultValue={amount}
-                required
+                {...form.register("amount")}
               />
+              {form.formState.errors.amount && (
+                <p className="text-sm text-red-500 mt-1">
+                  {form.formState.errors.amount.message}
+                </p>
+              )}
             </div>
             <div className="w-full">
-              <Label htmlFor="category" className="md:sr-only">
-                Category
-              </Label>
+              <Label htmlFor="category">Category</Label>
               <Select
                 name="category"
                 defaultValue={
                   budgetCategories.find((ctg) => ctg.startsWith(category)) ||
                   undefined
                 }
+                onValueChange={(value) => form.setValue("category", value)}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a category" />
@@ -106,11 +137,19 @@ function UpdateBudgetForm({ budgetId, budget }: UpdateBudgetFormProps) {
                   ))}
                 </SelectContent>
               </Select>
+              {form.formState.errors.category && (
+                <p className="text-sm text-red-500 mt-1">
+                  {form.formState.errors.category.message}
+                </p>
+              )}
             </div>
           </div>
           <div className="flex items-end justify-end gap-4 pr-10 py-5">
             <CancelButton href={`/dashboard/budgets/${budgetId}`} />
-            <SubmitButton pendingLabel="Updating budget...">
+            <SubmitButton
+              pendingLabel="Updating budget..."
+              disabled={form.formState.isSubmitting}
+            >
               Edit Budget
             </SubmitButton>
           </div>
