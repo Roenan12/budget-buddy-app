@@ -123,7 +123,13 @@ function BudgetForm() {
             </p>
           )}
         </div>
-        <div className="mt-auto">
+        <div
+          className={`${
+            Object.keys(form.formState.errors).length > 0
+              ? "my-auto"
+              : "mt-auto"
+          }`}
+        >
           <SubmitButton
             pendingLabel="Adding budget..."
             fullWidth
