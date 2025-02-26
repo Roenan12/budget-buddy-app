@@ -1,10 +1,8 @@
-import { Footer } from "@/components/Footer";
-import UserNav from "@/components/UserNav";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { Icons } from "@/components/Icons";
-import { Sidebar } from "@/components/Sidebar";
+import { Sidebar, Footer, UserNav } from "@/components/layout";
+import { ThemeToggle } from "@/components/ui/utils/ThemeToggle";
+import { Icons } from "@/components/ui/utils/Icons";
 import type React from "react";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/feedback/toaster";
 
 interface DashboardLayoutProps {
   children?: React.ReactNode;

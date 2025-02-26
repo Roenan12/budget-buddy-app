@@ -1,6 +1,4 @@
-import BudgetChart from "@/components/BudgetChart";
-import { RecentExpenses } from "@/components/RecentExpenses";
-import StatsCard from "@/components/StatsCard";
+import { StatsCard, BudgetChart, RecentExpenses } from "@/components/dashboard";
 
 import {
   Card,
@@ -8,7 +6,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/data-display/card";
 import { auth } from "@/lib/auth";
 import { getBudgets } from "@/lib/data-service";
 

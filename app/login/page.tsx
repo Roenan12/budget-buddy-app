@@ -1,12 +1,12 @@
-import SignInButton from "@/components/SignInButton";
+import { SignInButton } from "@/components/ui/buttons";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Icons } from "@/components/Icons";
+} from "@/components/ui/data-display/card";
+import { Icons } from "@/components/ui/utils/Icons";
 
 export const metadata = {
   title: "Login",

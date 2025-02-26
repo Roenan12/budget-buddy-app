@@ -1,8 +1,7 @@
-import ExpenseForm from "@/components/ExpenseForm";
-import ExpenseTable from "@/components/ExpenseTable";
-import Spinner from "@/components/ui/spinner";
+import { ExpenseForm, ExpenseTable } from "@/components/expenses";
+import Spinner from "@/components/ui/feedback/spinner";
 import { auth } from "@/lib/auth";
-import { getExpenses, getBudgets } from "@/lib/data-service";
+import { getBudgets, getExpenses } from "@/lib/data-service";
 import { Metadata } from "next";
 import { Suspense } from "react";
 

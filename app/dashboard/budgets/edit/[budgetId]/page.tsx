@@ -1,4 +1,4 @@
-import UpdateBudgetForm from "@/components/UpdateBudgetForm";
+import { UpdateBudgetForm } from "@/components/budgets";
 import { getBudget } from "@/lib/data-service";
 
 type Params = {

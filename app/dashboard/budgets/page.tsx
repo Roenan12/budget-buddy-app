@@ -1,6 +1,5 @@
-import BudgetList from "@/components/BudgetList";
-import BudgetsForm from "@/components/BudgetForm";
-import Spinner from "@/components/ui/spinner";
+import { BudgetList, BudgetForm } from "@/components/budgets";
+import Spinner from "@/components/ui/feedback/spinner";
 import { auth } from "@/lib/auth";
 import { getBudgets } from "@/lib/data-service";
 import type { Metadata } from "next";
@@ -24,7 +23,7 @@ export default async function Page() {
     <div className="w-full p-4">
       <h1 className="text-2xl font-bold mb-4">Budgets</h1>
 
-      <BudgetsForm />
+      <BudgetForm />
 
       <Suspense fallback={<Spinner />}>
         {budgets.length === 0 ? (

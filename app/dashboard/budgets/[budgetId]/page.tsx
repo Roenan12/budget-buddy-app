@@ -1,8 +1,8 @@
 import { auth } from "@/lib/auth";
 import { Budget, getBudget } from "@/lib/data-service";
 
-import BudgetCardDetails from "@/components/BudgetCardDetails";
-import { BackButton } from "@/components/BackButton";
+import { BudgetCardDetails } from "@/components/budgets";
+import { BackButton } from "@/components/ui/buttons/back-button";
 
 type Params = {
   params: {
