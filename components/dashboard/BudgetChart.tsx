@@ -10,29 +10,101 @@ import {
 import { Budget } from "@/lib/data-service";
 import { TrendingUp } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import React from "react";
+import { Expense } from "@/lib/data-service";
 
-function BudgetChart({ budgets }: { budgets: Budget[] }) {
-  const chartData = budgets.map((budget) => ({
-    month: new Date(budget.created_at).toLocaleString("default", {
-      month: "long",
-    }),
-    fullDate: new Date(budget.created_at).toLocaleDateString("default", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    }),
-    budget: budget.amount,
-    expenses: budget.expenses.totalSpent,
-  }));
+type ChartDataPoint = {
+  date: string;
+  formattedDate: string;
+  month: string;
+  remainingBudget: number;
+  totalExpenses: number;
+  budgetName: string;
+  budgetId: number;
+  expenseDetails: {
+    names: string[];
+    amount: number;
+  }[];
+};
+
+function BudgetChart({
+  budgets,
+  expenses,
+}: {
+  budgets: Budget[];
+  expenses: Expense[];
+}) {
+  const chartData = React.useMemo(() => {
+    // Sort expenses by date
+    const sortedExpenses = [...expenses].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    const dateMap = new Map<string, ChartDataPoint>();
+    const budgetExpenses = new Map<number, number>();
+
+    // Group expenses by date and budget
+    const expensesByDate = new Map<
+      string,
+      Map<number, { names: string[]; amount: number }[]>
+    >();
+
+    sortedExpenses.forEach((expense) => {
+      const date = new Date(expense.date);
+      const dateStr = date.toISOString().split("T")[0];
+
+      // Get the budget for this expense
+      const budget = budgets.find((b) => b.id === expense.budgetId);
+      if (!budget) return;
+
+      // Update running total for this specific budget
+      const currentExpenses = budgetExpenses.get(budget.id) || 0;
+      const newExpenseTotal = currentExpenses + expense.amountSpent;
+      budgetExpenses.set(budget.id, newExpenseTotal);
+
+      // Track expenses for this date and budget
+      if (!expensesByDate.has(dateStr)) {
+        expensesByDate.set(dateStr, new Map());
+      }
+      const budgetExpenseMap = expensesByDate.get(dateStr)!;
+      if (!budgetExpenseMap.has(budget.id)) {
+        budgetExpenseMap.set(budget.id, []);
+      }
+      budgetExpenseMap.get(budget.id)!.push({
+        names: [expense.name],
+        amount: expense.amountSpent,
+      });
+
+      // Calculate remaining budget for this specific budget
+      const remainingBudget = budget.amount - newExpenseTotal;
+
+      dateMap.set(dateStr, {
+        date: dateStr,
+        formattedDate: date.toLocaleDateString("default", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }),
+        month: date.toLocaleString("default", { month: "long" }),
+        remainingBudget,
+        totalExpenses: newExpenseTotal,
+        budgetName: budget.name,
+        budgetId: budget.id,
+        expenseDetails: budgetExpenseMap.get(budget.id)!,
+      });
+    });
+
+    return Array.from(dateMap.values());
+  }, [budgets, expenses]);
 
   const chartConfig = {
-    budget: {
-      label: "Budget",
-      color: "#adff2f",
+    remainingBudget: {
+      label: "Remaining Budget",
+      color: "rgb(173, 255, 47)",
     },
-    expenses: {
-      label: "Expenses",
-      color: "#ff2f2f",
+    totalExpenses: {
+      label: "Total Expenses",
+      color: "rgb(255, 47, 47)",
     },
   } satisfies ChartConfig;
 
@@ -62,33 +134,88 @@ function BudgetChart({ budgets }: { budgets: Budget[] }) {
             />
             <ChartTooltip
               cursor={false}
-              content={
-                <ChartTooltipContent
-                  indicator="dot"
-                  labelFormatter={(label, payload) => {
-                    if (payload && payload[0]) {
-                      return payload[0].payload.fullDate;
-                    }
-                    return label;
-                  }}
-                />
-              }
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  const data = payload[0].payload;
+                  const budget = budgets.find((b) => b.id === data.budgetId);
+                  const hasMultipleExpenses = data.expenseDetails.length > 1;
+
+                  return (
+                    <div className="rounded-lg border bg-background p-2 shadow-sm">
+                      <div className="grid gap-2">
+                        <div className="font-medium">{data.formattedDate}</div>
+                        <div className="text-xs text-muted-foreground">
+                          Budget: {data.budgetName}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Amount: ${budget?.amount.toFixed(2)}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Expense:{" "}
+                          {data.expenseDetails
+                            .map((e: { names: string[] }) => e.names[0])
+                            .join(", ")}
+                        </div>
+                        {hasMultipleExpenses && (
+                          <div className="text-xs text-muted-foreground">
+                            Amount Spent: $
+                            {data.expenseDetails
+                              .reduce(
+                                (sum: number, e: { amount: number }) =>
+                                  sum + e.amount,
+                                0
+                              )
+                              .toFixed(2)}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <div className="flex w-full flex-col gap-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-1">
+                                <div className="rounded-full bg-[rgb(173,255,47)] w-2 h-2" />
+                                <span className="text-sm text-muted-foreground">
+                                  Remaining Budget
+                                </span>
+                              </div>
+                              <span className="font-medium">
+                                ${data.remainingBudget.toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-1">
+                                <div className="rounded-full bg-[rgb(255,47,47)] w-2 h-2" />
+                                <span className="text-sm text-muted-foreground">
+                                  Total Expenses
+                                </span>
+                              </div>
+                              <span className="font-medium">
+                                ${data.totalExpenses.toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              }}
             />
             <Area
-              dataKey="expenses"
+              dataKey="remainingBudget"
               type="natural"
-              fill="var(--color-expenses)"
+              fill="rgb(173, 255, 47)"
               fillOpacity={0.4}
-              stroke="var(--color-expenses)"
-              stackId="a"
+              stroke="rgb(173, 255, 47)"
+              strokeWidth={2}
             />
             <Area
-              dataKey="budget"
+              dataKey="totalExpenses"
               type="natural"
-              fill="var(--color-budget)"
+              fill="rgb(255, 47, 47)"
               fillOpacity={0.4}
-              stroke="var(--color-budget)"
-              stackId="a"
+              stroke="rgb(255, 47, 47)"
+              strokeWidth={2}
             />
           </AreaChart>
         </ChartContainer>

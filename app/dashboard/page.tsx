@@ -8,12 +8,13 @@ import {
   CardTitle,
 } from "@/components/ui/data-display/card";
 import { auth } from "@/lib/auth";
-import { getBudgets } from "@/lib/data-service";
+import { getBudgets, getExpenses } from "@/lib/data-service";
 
 export default async function Page() {
   const session = await auth();
   if (!session) return;
   const budgets = await getBudgets(session?.user?.userId);
+  const expenses = await getExpenses(session?.user?.userId);
 
   return (
     <div className="space-y-4">
@@ -26,13 +27,13 @@ export default async function Page() {
       <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
         <Card className="md:col-span-1">
           <CardHeader>
-            <CardTitle>Budget Overview</CardTitle>
+            <CardTitle>Budget and Expenses Overview</CardTitle>
             <CardDescription>
               Monthly budget and expenses breakdown
             </CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
-            <BudgetChart budgets={budgets} />
+            <BudgetChart budgets={budgets} expenses={expenses} />
           </CardContent>
         </Card>
         <Card className="md:col-span-1">
