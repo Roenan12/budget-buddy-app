@@ -40,61 +40,75 @@ function BudgetChart({
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
 
-    const dateMap = new Map<string, ChartDataPoint>();
+    const dateMap = new Map<string, ChartDataPoint[]>();
     const budgetExpenses = new Map<number, number>();
 
-    // Group expenses by date and budget
-    const expensesByDate = new Map<
-      string,
-      Map<number, { names: string[]; amount: number }[]>
-    >();
+    // Track cumulative expenses for each budget
+    const cumulativeExpensesByBudget = new Map<number, number>();
 
+    // Initialize budget totals and cumulative trackers
+    budgets.forEach((budget) => {
+      budgetExpenses.set(budget.id, 0);
+      cumulativeExpensesByBudget.set(budget.id, 0);
+    });
+
+    // Group expenses by date and budget
     sortedExpenses.forEach((expense) => {
       const date = new Date(expense.date);
       const dateStr = date.toISOString().split("T")[0];
+
+      if (!dateMap.has(dateStr)) {
+        dateMap.set(dateStr, []);
+      }
 
       // Get the budget for this expense
       const budget = budgets.find((b) => b.id === expense.budgetId);
       if (!budget) return;
 
-      // Update running total for this specific budget
-      const currentExpenses = budgetExpenses.get(budget.id) || 0;
-      const newExpenseTotal = currentExpenses + expense.amountSpent;
-      budgetExpenses.set(budget.id, newExpenseTotal);
+      // Update cumulative expenses for this budget
+      const currentCumulative = cumulativeExpensesByBudget.get(budget.id) || 0;
+      const newCumulative = currentCumulative + expense.amountSpent;
+      cumulativeExpensesByBudget.set(budget.id, newCumulative);
 
-      // Track expenses for this date and budget
-      if (!expensesByDate.has(dateStr)) {
-        expensesByDate.set(dateStr, new Map());
+      // Find existing data point for this date and budget
+      const existingPoint = dateMap
+        .get(dateStr)!
+        .find((point) => point.budgetId === budget.id);
+
+      if (existingPoint) {
+        // Add to existing data point
+        existingPoint.expenseDetails.push({
+          names: [expense.name],
+          amount: expense.amountSpent,
+        });
+        existingPoint.totalExpenses = newCumulative; // Use cumulative total
+        existingPoint.remainingBudget = budget.amount - newCumulative; // Update remaining based on cumulative
+      } else {
+        // Create new data point for this budget
+        dateMap.get(dateStr)!.push({
+          date: dateStr,
+          formattedDate: date.toLocaleDateString("default", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }),
+          month: date.toLocaleString("default", { month: "long" }),
+          remainingBudget: budget.amount - newCumulative, // Use cumulative for remaining
+          totalExpenses: newCumulative, // Use cumulative total
+          budgetName: budget.name,
+          budgetId: budget.id,
+          expenseDetails: [
+            {
+              names: [expense.name],
+              amount: expense.amountSpent,
+            },
+          ],
+        });
       }
-      const budgetExpenseMap = expensesByDate.get(dateStr)!;
-      if (!budgetExpenseMap.has(budget.id)) {
-        budgetExpenseMap.set(budget.id, []);
-      }
-      budgetExpenseMap.get(budget.id)!.push({
-        names: [expense.name],
-        amount: expense.amountSpent,
-      });
-
-      // Calculate remaining budget for this specific budget
-      const remainingBudget = budget.amount - newExpenseTotal;
-
-      dateMap.set(dateStr, {
-        date: dateStr,
-        formattedDate: date.toLocaleDateString("default", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }),
-        month: date.toLocaleString("default", { month: "long" }),
-        remainingBudget,
-        totalExpenses: newExpenseTotal,
-        budgetName: budget.name,
-        budgetId: budget.id,
-        expenseDetails: budgetExpenseMap.get(budget.id)!,
-      });
     });
 
-    return Array.from(dateMap.values());
+    // Flatten the grouped data points
+    return Array.from(dateMap.values()).flat();
   }, [budgets, expenses]);
 
   const chartConfig = {
@@ -137,37 +151,48 @@ function BudgetChart({
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
                   const data = payload[0].payload;
+
+                  // Get unique budgets for this date
+                  const uniqueBudgets = Array.from(
+                    new Set(
+                      data.expenseDetails.map(
+                        (e: { names: string[] }) =>
+                          budgets.find((b) => b.id === data.budgetId)?.name
+                      )
+                    )
+                  ).filter(Boolean);
+
+                  // Get all expense names
+                  const allExpenses = data.expenseDetails
+                    .map((e: { names: string[] }) => e.names[0])
+                    .filter(Boolean);
+
+                  // Get the budget object for the amount
                   const budget = budgets.find((b) => b.id === data.budgetId);
-                  const hasMultipleExpenses = data.expenseDetails.length > 1;
 
                   return (
                     <div className="rounded-lg border bg-background p-2 shadow-sm">
                       <div className="grid gap-2">
                         <div className="font-medium">{data.formattedDate}</div>
                         <div className="text-xs text-muted-foreground">
-                          Budget: {data.budgetName}
+                          Budget: {uniqueBudgets.join(", ")}
                         </div>
                         <div className="text-xs text-muted-foreground">
                           Amount: ${budget?.amount.toFixed(2)}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          Expense:{" "}
-                          {data.expenseDetails
-                            .map((e: { names: string[] }) => e.names[0])
-                            .join(", ")}
+                          Expense: {allExpenses.join(", ")}
                         </div>
-                        {hasMultipleExpenses && (
-                          <div className="text-xs text-muted-foreground">
-                            Amount Spent: $
-                            {data.expenseDetails
-                              .reduce(
-                                (sum: number, e: { amount: number }) =>
-                                  sum + e.amount,
-                                0
-                              )
-                              .toFixed(2)}
-                          </div>
-                        )}
+                        <div className="text-xs text-muted-foreground">
+                          Spent: $
+                          {data.expenseDetails
+                            .reduce(
+                              (sum: number, detail: { amount: number }) =>
+                                sum + detail.amount,
+                              0
+                            )
+                            .toFixed(2)}
+                        </div>
                         <div className="flex items-center gap-2">
                           <div className="flex w-full flex-col gap-1">
                             <div className="flex items-center justify-between gap-2">
