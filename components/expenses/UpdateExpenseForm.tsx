@@ -18,7 +18,10 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 // Define the form validation schema
-const createUpdateExpenseFormSchema = (budgets: Budget[]) =>
+const createUpdateExpenseFormSchema = (
+  budgets: Budget[],
+  originalExpense: Expense
+) =>
   z
     .object({
       name: z
@@ -42,8 +45,14 @@ const createUpdateExpenseFormSchema = (budgets: Budget[]) =>
         );
         if (!selectedBudget) return true;
 
-        const remainingAmount =
-          selectedBudget.amount - (selectedBudget.expenses?.totalSpent || 0);
+        // Add back the original expense amount if we're updating the same budget
+        const adjustedTotalSpent =
+          (selectedBudget.expenses?.totalSpent || 0) -
+          (data.budgetId === originalExpense.budgets.id.toString()
+            ? originalExpense.amountSpent
+            : 0);
+
+        const remainingAmount = selectedBudget.amount - adjustedTotalSpent;
         return Number(data.amountSpent) <= remainingAmount;
       },
       {
@@ -69,7 +78,7 @@ function UpdateExpenseForm({
 }: UpdateExpenseFormProps) {
   const { toast } = useToast();
   const form = useForm<UpdateExpenseFormValues>({
-    resolver: zodResolver(createUpdateExpenseFormSchema(budgets)),
+    resolver: zodResolver(createUpdateExpenseFormSchema(budgets, expense)),
     defaultValues: {
       name: expense.name,
       amountSpent: expense.amountSpent.toString(),

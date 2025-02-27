@@ -153,7 +153,7 @@ export async function getExpenses(userId: number): Promise<Expense[]> {
       `
       )
       .eq("userId", userId)
-      .order("created_at", { ascending: false });
+      .order("date", { ascending: false });
 
     if (error) {
       console.error("Supabase error:", {
@@ -220,7 +220,7 @@ export async function getRecentExpenses(userId: number): Promise<Expense[]> {
       `
       )
       .eq("userId", userId)
-      .order("created_at", { ascending: false })
+      .order("date", { ascending: false })
       .limit(10); // Only fetch 10 records
 
     if (error) {
