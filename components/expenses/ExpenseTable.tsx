@@ -1,6 +1,6 @@
 "use client";
 
-import { ExpenseTableRow } from "@/components/expenses";
+import { ExpenseTableRow, SearchBar } from "@/components/expenses";
 import { Button } from "@/components/ui/buttons";
 import {
   Table,
@@ -26,11 +26,26 @@ function ExpenseTable({
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // ensure the state is not stale by setting the expenses to the latest value
+  // Update useEffect to handle both initial expenses and search filtering
   useEffect(() => {
-    setExpenses(initialExpenses);
-  }, [initialExpenses]); // Sync the state when `initialExpenses` changes
+    const filtered = initialExpenses.filter((expense) => {
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        expense.name.toLowerCase().includes(searchLower) ||
+        expense.amountSpent.toString().includes(searchLower) ||
+        expense.date.toLowerCase().includes(searchLower) ||
+        expense.budgets.budgetName.toLowerCase().includes(searchLower)
+      );
+    });
+    setExpenses(filtered);
+  }, [initialExpenses, searchQuery]);
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1); // Reset to first page when searching
+  };
 
   // Sorting function
   const handleSort = (field: string) => {
@@ -83,6 +98,9 @@ function ExpenseTable({
 
   return (
     <div>
+      <div className="mb-4">
+        <SearchBar onSearch={handleSearch} />
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
