@@ -3,7 +3,12 @@
 import { Search } from "lucide-react";
 import { Input } from "../ui/forms";
 
-function SearchBar({ onSearch }: { onSearch: (query: string) => void }) {
+interface SearchBarProps {
+  onSearch: (query: string) => void;
+  placeholder?: string;
+}
+
+function SearchBar({ onSearch, placeholder = "Search..." }: SearchBarProps) {
   return (
     <div className="mb-4">
       <div className="relative w-full lg:w-[572px]">
@@ -12,7 +17,7 @@ function SearchBar({ onSearch }: { onSearch: (query: string) => void }) {
         </div>
         <Input
           type="text"
-          placeholder="Search expenses..."
+          placeholder={placeholder}
           onChange={(e) => onSearch(e.target.value)}
           className="flex w-full p-2 pl-10 border rounded-md"
         />

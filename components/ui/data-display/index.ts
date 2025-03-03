@@ -6,3 +6,4 @@ export * from "./carousel";
 export * from "./chart";
 export * from "./collapsible";
 export * from "./table";
+export * from "./Pagination";

@@ -12,6 +12,7 @@ import {
 import { Budget, Expense } from "@/lib/data-service";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
+import Pagination from "@/components/ui/data-display/Pagination";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -98,9 +99,10 @@ function ExpenseTable({
 
   return (
     <div>
-      <div className="mb-4">
-        <SearchBar onSearch={handleSearch} />
-      </div>
+      <SearchBar
+        onSearch={handleSearch}
+        placeholder="Search expenses by name, amount, date, or budget..."
+      />
       <Table>
         <TableHeader>
           <TableRow>
@@ -142,31 +144,12 @@ function ExpenseTable({
         </TableBody>
       </Table>
 
-      {/* Pagination Controls */}
-      <div className="flex justify-between items-center mt-4">
-        <div className="text-sm text-gray-500">
-          Showing {startIndex + 1}-{Math.min(endIndex, expenses.length)} of{" "}
-          {expenses.length} results
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-          >
-            &lt; Previous
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-            }
-            disabled={currentPage === totalPages}
-          >
-            Next &gt;
-          </Button>
-        </div>
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalItems={expenses.length}
+        itemsPerPage={ITEMS_PER_PAGE}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 }
