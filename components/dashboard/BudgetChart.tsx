@@ -233,6 +233,7 @@ function BudgetChart({
               fillOpacity={0.4}
               stroke="rgb(173, 255, 47)"
               strokeWidth={2}
+              baseValue={0}
             />
             <Area
               dataKey="totalExpenses"
@@ -241,6 +242,7 @@ function BudgetChart({
               fillOpacity={0.4}
               stroke="rgb(255, 47, 47)"
               strokeWidth={2}
+              baseValue={0}
             />
           </AreaChart>
         </ChartContainer>
