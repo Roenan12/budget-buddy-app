@@ -9,11 +9,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 function BudgetList({ budgets: initialBudgets }: { budgets: Budget[] }) {
   const [currentPage, setCurrentPage] = useState(1);
+  const isMobile = useIsMobile();
+  const [itemsPerPage, setItemsPerPage] = useState(isMobile ? 4 : 8);
   const [budgets, setBudgets] = useState<Budget[]>(initialBudgets);
   const [searchQuery, setSearchQuery] = useState("");
-  const isMobile = useIsMobile();
-
-  const ITEMS_PER_PAGE = isMobile ? 4 : 12;
 
   // Handle search and filtering
   useEffect(() => {
@@ -41,45 +40,53 @@ function BudgetList({ budgets: initialBudgets }: { budgets: Budget[] }) {
     setCurrentPage(1);
   }, [isMobile]);
 
+  // Add this effect to handle mobile pagination
+  useEffect(() => {
+    setItemsPerPage(isMobile ? 4 : 8);
+    setCurrentPage(1);
+  }, [isMobile]);
+
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };
 
   // Pagination calculations
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
   const currentBudgets = budgets.slice(startIndex, endIndex);
-
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-  };
 
   return (
     <div>
-      <SearchBar
-        onSearch={handleSearch}
-        placeholder="Search budgets by name, amount, or category..."
-      />
+      {budgets.length === 0 ? (
+        <div className="text-center py-4">No budgets found</div>
+      ) : (
+        <div>
+          <SearchBar
+            onSearch={handleSearch}
+            placeholder="Search budgets by name, amount, or category..."
+          />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {currentBudgets.map((budget) => (
-          <BudgetCard key={budget.id} budget={budget} />
-        ))}
-      </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {currentBudgets.map((budget) => (
+              <BudgetCard key={budget.id} budget={budget} />
+            ))}
+          </div>
 
-      {currentBudgets.length === 0 && (
-        <p className="text-center text-gray-500 my-8">
-          No budgets found matching your search.
-        </p>
-      )}
+          {currentBudgets.length === 0 && (
+            <p className="text-center text-gray-500 my-8">
+              No budgets found matching your search.
+            </p>
+          )}
 
-      {budgets.length > 0 && (
-        <Pagination
-          currentPage={currentPage}
-          totalItems={budgets.length}
-          itemsPerPage={ITEMS_PER_PAGE}
-          onPageChange={handlePageChange}
-        />
+          <Pagination
+            currentPage={currentPage}
+            totalItems={budgets.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={setItemsPerPage}
+            pageSizeOptions={[4, 8, 12]}
+          />
+        </div>
       )}
     </div>
   );

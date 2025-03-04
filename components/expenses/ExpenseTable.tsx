@@ -1,7 +1,6 @@
 "use client";
 
 import { ExpenseTableRow, SearchBar } from "@/components/expenses";
-import { Button } from "@/components/ui/buttons";
 import {
   Table,
   TableBody,
@@ -24,6 +23,7 @@ function ExpenseTable({
   budgets: Budget[];
 }) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
@@ -83,9 +83,8 @@ function ExpenseTable({
   };
 
   // Pagination calculations
-  const totalPages = Math.ceil(expenses.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
   const currentExpenses = expenses.slice(startIndex, endIndex);
 
   const SortIcon = ({ field }: { field: string }) => {
@@ -99,57 +98,65 @@ function ExpenseTable({
 
   return (
     <div>
-      <SearchBar
-        onSearch={handleSearch}
-        placeholder="Search expenses by name, amount, date, or budget..."
-      />
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead
-              onClick={() => handleSort("name")}
-              className="cursor-pointer"
-            >
-              Name <SortIcon field="name" />
-            </TableHead>
-            <TableHead
-              onClick={() => handleSort("amountSpent")}
-              className="cursor-pointer"
-            >
-              Amount <SortIcon field="amountSpent" />
-            </TableHead>
-            <TableHead
-              onClick={() => handleSort("date")}
-              className="cursor-pointer"
-            >
-              Date <SortIcon field="date" />
-            </TableHead>
-            <TableHead
-              onClick={() => handleSort("budget")}
-              className="cursor-pointer text-center"
-            >
-              Budget <SortIcon field="budget" />
-            </TableHead>
-            <TableHead></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {currentExpenses.map((expense) => (
-            <ExpenseTableRow
-              key={expense.id}
-              expense={expense}
-              budgets={budgets}
-            />
-          ))}
-        </TableBody>
-      </Table>
+      {expenses.length === 0 ? (
+        <div className="text-center py-4">No expenses found</div>
+      ) : (
+        <div>
+          <SearchBar
+            onSearch={handleSearch}
+            placeholder="Search expenses by name, amount, date, or budget..."
+          />
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead
+                  onClick={() => handleSort("name")}
+                  className="cursor-pointer"
+                >
+                  Name <SortIcon field="name" />
+                </TableHead>
+                <TableHead
+                  onClick={() => handleSort("amountSpent")}
+                  className="cursor-pointer"
+                >
+                  Amount <SortIcon field="amountSpent" />
+                </TableHead>
+                <TableHead
+                  onClick={() => handleSort("date")}
+                  className="cursor-pointer"
+                >
+                  Date <SortIcon field="date" />
+                </TableHead>
+                <TableHead
+                  onClick={() => handleSort("budget")}
+                  className="cursor-pointer text-center"
+                >
+                  Budget <SortIcon field="budget" />
+                </TableHead>
+                <TableHead></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {currentExpenses.map((expense) => (
+                <ExpenseTableRow
+                  key={expense.id}
+                  expense={expense}
+                  budgets={budgets}
+                />
+              ))}
+            </TableBody>
+          </Table>
 
-      <Pagination
-        currentPage={currentPage}
-        totalItems={expenses.length}
-        itemsPerPage={ITEMS_PER_PAGE}
-        onPageChange={setCurrentPage}
-      />
+          <Pagination
+            currentPage={currentPage}
+            totalItems={expenses.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            onItemsPerPageChange={setItemsPerPage}
+            pageSizeOptions={[5, 10, 15, 20]}
+          />
+        </div>
+      )}
     </div>
   );
 }
