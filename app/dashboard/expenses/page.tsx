@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { getBudgets, getExpenses } from "@/lib/data-service";
 import { Metadata } from "next";
 import { Suspense } from "react";
+import { ReceiptText } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Expenses",
@@ -29,7 +30,13 @@ export default async function Page() {
 
       <Suspense fallback={<Spinner />}>
         {expenses.length === 0 ? (
-          <p className="text-lg">You have no expenses yet.</p>
+          <div className="flex flex-col items-center justify-center p-8 mt-8 border-2 border-dashed rounded-lg bg-muted/50">
+            <ReceiptText className="h-10 w-10 text-muted-foreground mb-2" />
+            <h3 className="text-xl font-semibold mb-2">No expenses recorded</h3>
+            <p className="text-muted-foreground text-center">
+              Start tracking your spending by adding your first expense.
+            </p>
+          </div>
         ) : (
           <ExpenseTable expenses={expenses} budgets={budgets} />
         )}

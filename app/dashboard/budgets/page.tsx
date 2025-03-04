@@ -4,6 +4,8 @@ import { auth } from "@/lib/auth";
 import { getBudgets } from "@/lib/data-service";
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { Banknote } from "lucide-react";
+import { Button } from "@/components/ui/buttons";
 
 export const metadata: Metadata = {
   title: "Budgets",
@@ -27,7 +29,13 @@ export default async function Page() {
 
       <Suspense fallback={<Spinner />}>
         {budgets.length === 0 ? (
-          <p className="text-lg">You have no budgets yet.</p>
+          <div className="flex flex-col items-center justify-center p-8 mt-8 border-2 border-dashed rounded-lg bg-muted/50">
+            <Banknote className="h-12 w-12 text-muted-foreground mb-2" />
+            <h3 className="text-xl font-semibold mb-2">No budgets yet</h3>
+            <p className="text-muted-foreground text-center">
+              Create your first budget to start tracking your expenses.
+            </p>
+          </div>
         ) : (
           <BudgetList budgets={budgets} />
         )}
