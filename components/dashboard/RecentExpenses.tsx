@@ -1,8 +1,19 @@
 import { getRecentExpenses } from "@/lib/data-service";
 import Link from "next/link";
+import { CreditCard } from "lucide-react";
 
 async function RecentExpenses({ userId }: { userId: number }) {
   const expenses = await getRecentExpenses(userId);
+
+  if (!expenses.length) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[350px] text-muted-foreground">
+        <CreditCard className="h-10 w-10 mb-2" />
+        <p className="text-lg font-medium">No recent expenses</p>
+        <p className="text-sm">Add some expenses to see them here</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-1 w-full max-h-[450px] overflow-y-auto pr-2">

@@ -34,6 +34,18 @@ function BudgetChart({
   budgets: Budget[];
   expenses: Expense[];
 }) {
+  if (!budgets.length || !expenses.length) {
+    return (
+      <CardContent className="flex flex-col items-center justify-center min-h-[350px] text-muted-foreground">
+        <TrendingUp className="h-10 w-10 mb-2" />
+        <p className="text-lg font-medium">No data available</p>
+        <p className="text-sm">
+          Add some budgets and expenses to see your chart
+        </p>
+      </CardContent>
+    );
+  }
+
   const chartData = React.useMemo(() => {
     // Sort expenses by date
     const sortedExpenses = [...expenses].sort(
