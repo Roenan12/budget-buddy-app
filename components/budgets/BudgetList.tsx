@@ -6,11 +6,26 @@ import { SearchBar } from "@/components/expenses";
 import Pagination from "@/components/ui/data-display/Pagination";
 import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  PaginationProvider,
+  usePagination,
+} from "@/contexts/PaginationContext";
 
 function BudgetList({ budgets: initialBudgets }: { budgets: Budget[] }) {
-  const [currentPage, setCurrentPage] = useState(1);
   const isMobile = useIsMobile();
-  const [itemsPerPage, setItemsPerPage] = useState(isMobile ? 4 : 8);
+  const initialItemsPerPage = isMobile ? 4 : 8;
+
+  return (
+    <PaginationProvider initialItemsPerPage={initialItemsPerPage}>
+      <BudgetListContent budgets={initialBudgets} />
+    </PaginationProvider>
+  );
+}
+
+function BudgetListContent({ budgets: initialBudgets }: { budgets: Budget[] }) {
+  const { currentPage, itemsPerPage, setCurrentPage, setItemsPerPage } =
+    usePagination();
+  const isMobile = useIsMobile();
   const [budgets, setBudgets] = useState<Budget[]>(initialBudgets);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -40,12 +55,13 @@ function BudgetList({ budgets: initialBudgets }: { budgets: Budget[] }) {
     setCurrentPage(1);
   }, [isMobile]);
 
-  // Add this effect to handle mobile pagination
+  // handle mobile pagination
   useEffect(() => {
     setItemsPerPage(isMobile ? 4 : 8);
     setCurrentPage(1);
-  }, [isMobile]);
+  }, [isMobile, setItemsPerPage, setCurrentPage]);
 
+  // search for budgets
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };

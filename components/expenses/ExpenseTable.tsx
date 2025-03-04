@@ -12,8 +12,10 @@ import { Budget, Expense } from "@/lib/data-service";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import Pagination from "@/components/ui/data-display/Pagination";
-
-const ITEMS_PER_PAGE = 5;
+import {
+  PaginationProvider,
+  usePagination,
+} from "@/contexts/PaginationContext";
 
 function ExpenseTable({
   expenses: initialExpenses,
@@ -22,8 +24,22 @@ function ExpenseTable({
   expenses: Expense[];
   budgets: Budget[];
 }) {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
+  return (
+    <PaginationProvider initialItemsPerPage={5}>
+      <ExpenseTableContent expenses={initialExpenses} budgets={budgets} />
+    </PaginationProvider>
+  );
+}
+
+function ExpenseTableContent({
+  expenses: initialExpenses,
+  budgets,
+}: {
+  expenses: Expense[];
+  budgets: Budget[];
+}) {
+  const { currentPage, itemsPerPage, setCurrentPage, setItemsPerPage } =
+    usePagination();
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
