@@ -1,16 +1,42 @@
 import { ExpenseForm, ExpenseTable } from "@/components/expenses";
-import Spinner from "@/components/ui/feedback/spinner";
 import { auth } from "@/lib/auth";
 import { getBudgets, getExpenses } from "@/lib/data-service";
 import { Metadata } from "next";
 import { Suspense } from "react";
 import { ReceiptText } from "lucide-react";
+import { Skeleton } from "@/components/ui/feedback/skeleton";
+import { Card } from "@/components/ui/data-display/card";
 
 export const metadata: Metadata = {
   title: "Expenses",
 };
 
-export const revalidate = 0;
+function ExpenseTableSkeleton() {
+  return (
+    <Card className="mb-4">
+      <div className="border-b">
+        <div className="grid grid-cols-5 p-4">
+          <Skeleton className="h-4 w-[100px]" />
+          <Skeleton className="h-4 w-[80px]" />
+          <Skeleton className="h-4 w-[100px]" />
+          <Skeleton className="h-4 w-[100px]" />
+          <Skeleton className="h-4 w-[80px]" />
+        </div>
+      </div>
+      <div className="divide-y">
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="grid grid-cols-5 p-4 items-center">
+            <Skeleton className="h-4 w-[140px]" />
+            <Skeleton className="h-4 w-[80px]" />
+            <Skeleton className="h-4 w-[120px]" />
+            <Skeleton className="h-4 w-[120px]" />
+            <Skeleton className="h-8 w-[80px]" />
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
 
 export default async function Page() {
   const session = await auth();
@@ -28,7 +54,7 @@ export default async function Page() {
 
       <ExpenseForm budgets={budgets} />
 
-      <Suspense fallback={<Spinner />}>
+      <Suspense fallback={<ExpenseTableSkeleton />}>
         {expenses.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-8 mt-8 border-2 border-dashed rounded-lg bg-muted/50">
             <ReceiptText className="h-10 w-10 text-muted-foreground mb-2" />
