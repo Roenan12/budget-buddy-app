@@ -11,8 +11,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/forms";
-import { Input } from "@/components/ui/forms";
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/form";
 import { useState } from "react";
 import SpinnerMini from "@/components/ui/feedback/spinner-mini";
 import { signInWithEmailAction, signUpWithEmailAction } from "@/lib/actions";

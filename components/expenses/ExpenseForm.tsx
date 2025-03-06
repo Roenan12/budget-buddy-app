@@ -1,15 +1,15 @@
 "use client";
 
 import { SubmitButton } from "@/components/ui/buttons";
-import { Input } from "@/components/ui/forms/input";
-import { Label } from "@/components/ui/forms/label";
+import { Input } from "@/components/ui/form/input";
+import { Label } from "@/components/ui/form/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/forms/select";
+} from "@/components/ui/form/select";
 import { useToast } from "@/hooks/use-toast";
 import { createExpense } from "@/lib/actions";
 import { Budget } from "@/lib/data-service";

@@ -1,7 +1,7 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { Input } from "../ui/forms";
+import { Input } from "../ui/form";
 
 interface SearchBarProps {
   onSearch: (query: string) => void;

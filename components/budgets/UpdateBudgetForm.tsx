@@ -2,15 +2,15 @@
 
 import { CancelButton, SubmitButton } from "@/components/ui/buttons";
 import { Card } from "@/components/ui/data-display/card";
-import { Input } from "@/components/ui/forms/input";
-import { Label } from "@/components/ui/forms/label";
+import { Input } from "@/components/ui/form/input";
+import { Label } from "@/components/ui/form/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/forms/select";
+} from "@/components/ui/form/select";
 import { useToast } from "@/hooks/use-toast";
 import { updateBudget } from "@/lib/actions";
 import { budgetCategories } from "@/lib/constants";

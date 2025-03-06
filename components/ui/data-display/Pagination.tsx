@@ -5,7 +5,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/forms/select";
+} from "@/components/ui/form/select";
 
 interface PaginationProps {
   currentPage: number;
