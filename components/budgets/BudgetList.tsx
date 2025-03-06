@@ -73,15 +73,15 @@ function BudgetListContent({ budgets: initialBudgets }: { budgets: Budget[] }) {
 
   return (
     <div>
+      <SearchBar
+        onSearch={handleSearch}
+        placeholder="Search budgets by name, amount, or category..."
+      />
+
       {budgets.length === 0 ? (
         <div className="text-center py-4">No budgets found</div>
       ) : (
         <div>
-          <SearchBar
-            onSearch={handleSearch}
-            placeholder="Search budgets by name, amount, or category..."
-          />
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {currentBudgets.map((budget) => (
               <BudgetCard key={budget.id} budget={budget} />

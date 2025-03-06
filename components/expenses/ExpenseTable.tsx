@@ -114,14 +114,15 @@ function ExpenseTableContent({
 
   return (
     <div>
+      <SearchBar
+        onSearch={handleSearch}
+        placeholder="Search expenses by name, amount, date, or budget..."
+      />
+
       {expenses.length === 0 ? (
         <div className="text-center py-4">No expenses found</div>
       ) : (
         <div>
-          <SearchBar
-            onSearch={handleSearch}
-            placeholder="Search expenses by name, amount, date, or budget..."
-          />
           <Table>
             <TableHeader>
               <TableRow>
