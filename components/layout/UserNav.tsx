@@ -29,7 +29,10 @@ export async function UserNav() {
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
             <AvatarImage src={user?.image || ""} alt={user?.name || ""} />
-            <AvatarFallback>SC</AvatarFallback>
+            <AvatarFallback>
+              {" "}
+              <User />
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -45,7 +48,10 @@ export async function UserNav() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/account/profile" className="w-full flex items-center">
+            <Link
+              href="/dashboard/account/profile"
+              className="w-full flex items-center"
+            >
               <User className="mr-2 h-4 w-4" />
               <span>Profile</span>
             </Link>
