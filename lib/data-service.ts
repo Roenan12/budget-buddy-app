@@ -295,15 +295,41 @@ export async function createUser(newUser: { email: string; fullName: string }) {
   try {
     console.log("Creating user with data:", newUser);
 
-    const { data, error } = await supabase.from("users").insert([newUser]);
+    // First check if user already exists
+    const { data: existingUser } = await supabase
+      .from("users")
+      .select()
+      .eq("email", newUser.email)
+      .single();
+
+    if (existingUser) {
+      return existingUser;
+    }
+
+    // Create new user if doesn't exist
+    const { error } = await supabase.from("users").insert([newUser]);
 
     if (error) {
       console.error("createUser error:", error);
-      throw new Error("User could not be created");
+      if (error.code === "23505") {
+        throw new Error("User with this email already exists");
+      }
+      throw new Error(`User could not be created: ${error.message}`);
     }
 
-    console.log("User created successfully:", data);
-    return data;
+    // Get the created user
+    const { data: createdUser, error: fetchError } = await supabase
+      .from("users")
+      .select()
+      .eq("email", newUser.email)
+      .single();
+
+    if (fetchError || !createdUser) {
+      throw new Error("Failed to fetch created user");
+    }
+
+    console.log("User created successfully:", createdUser);
+    return createdUser;
   } catch (error) {
     console.error("createUser failed:", error);
     throw error;

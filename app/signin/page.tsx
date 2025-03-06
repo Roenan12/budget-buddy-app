@@ -1,13 +1,9 @@
-import { LoginCard } from "@/components/auth/LoginCard";
+import { SignInCard } from "@/components/auth/SignInCard";
 
-export const metadata = {
-  title: "Login",
-};
-
-export default function Page() {
+export default function SignInPage() {
   return (
     <div className="flex h-screen w-screen flex-col items-center justify-center">
-      <LoginCard />
+      <SignInCard />
     </div>
   );
 }
