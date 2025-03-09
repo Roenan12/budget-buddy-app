@@ -25,6 +25,10 @@ function BudgetCard({ budget }: BudgetCardProps) {
 
   const progressPercentage = (amountSpent / amount) * 100;
 
+  const formatCurrency = (value: number): string => {
+    return value % 1 === 0 ? value.toString() : value.toFixed(2);
+  };
+
   const getProgressColor = (percentage: number): string => {
     return cn("[&>div]:bg-green-400", {
       "[&>div]:bg-red-400": percentage > 80,
@@ -44,7 +48,7 @@ function BudgetCard({ budget }: BudgetCardProps) {
           </span>
         </CardTitle>
         <CardDescription className="font-semibold text-3xl">
-          ${amount}
+          ${formatCurrency(amount)}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -57,8 +61,12 @@ function BudgetCard({ budget }: BudgetCardProps) {
         />
 
         <div className="flex justify-between mt-2 text-sm text-gray-600">
-          <span className="text-red-500">${amountSpent} spent</span>
-          <span className="text-green-500">${remainingAmount} remaining</span>
+          <span className="text-red-500">
+            ${formatCurrency(amountSpent)} spent
+          </span>
+          <span className="text-green-500">
+            ${formatCurrency(remainingAmount)} remaining
+          </span>
         </div>
       </CardContent>
 
