@@ -149,6 +149,7 @@ function UpdateBudgetForm({ budgetId, budget }: UpdateBudgetFormProps) {
             <SubmitButton
               pendingLabel="Updating budget..."
               disabled={form.formState.isSubmitting}
+              isSubmitting={form.formState.isSubmitting}
             >
               Edit Budget
             </SubmitButton>

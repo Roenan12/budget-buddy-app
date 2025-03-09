@@ -8,6 +8,7 @@ type SubmitButtonProps = {
   pendingLabel: string;
   fullWidth?: boolean;
   disabled?: boolean;
+  isSubmitting?: boolean;
 };
 
 // create a new component which needs to be rendered inside a form in order to use useFormStatus hook
@@ -16,17 +17,20 @@ function SubmitButton({
   pendingLabel,
   fullWidth = false,
   disabled = false,
+  isSubmitting = false,
 }: SubmitButtonProps) {
   const { pending } = useFormStatus();
+  const isLoading = pending || isSubmitting;
+
   return (
     <Button
       type="submit"
       size="lg"
       className="my-auto"
-      disabled={pending || disabled}
+      disabled={isLoading || disabled}
       fullWidth={fullWidth}
     >
-      {pending ? pendingLabel : children}
+      {isLoading ? pendingLabel : children}
     </Button>
   );
 }

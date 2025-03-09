@@ -134,6 +134,7 @@ function BudgetForm() {
             pendingLabel="Adding budget..."
             fullWidth
             disabled={form.formState.isSubmitting}
+            isSubmitting={form.formState.isSubmitting}
           >
             Add Budget
           </SubmitButton>

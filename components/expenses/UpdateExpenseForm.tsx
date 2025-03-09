@@ -178,6 +178,7 @@ function UpdateExpenseForm({
             pendingLabel="Updating expense..."
             fullWidth
             disabled={form.formState.isSubmitting}
+            isSubmitting={form.formState.isSubmitting}
           >
             Update expense
           </SubmitButton>

@@ -170,6 +170,7 @@ function ExpenseForm({ budgets }: ExpenseFormProps) {
             pendingLabel="Adding expense..."
             fullWidth
             disabled={form.formState.isSubmitting}
+            isSubmitting={form.formState.isSubmitting}
           >
             Add Expense
           </SubmitButton>

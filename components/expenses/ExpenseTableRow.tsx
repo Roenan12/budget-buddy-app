@@ -10,6 +10,7 @@ import {
   DialogOverlay,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/overlay/dialog";
 import {
   DropdownMenu,
@@ -80,6 +81,9 @@ function ExpenseTableRow({ expense, budgets }: ExpenseTableRowProps) {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit Expense</DialogTitle>
+              <DialogDescription>
+                Make changes to your expense here.
+              </DialogDescription>
             </DialogHeader>
             <UpdateExpenseForm
               expense={expense}
@@ -123,6 +127,9 @@ function ExpenseTableRow({ expense, budgets }: ExpenseTableRowProps) {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit Expense</DialogTitle>
+              <DialogDescription>
+                Make changes to your expense here.
+              </DialogDescription>
             </DialogHeader>
             <UpdateExpenseForm
               expense={expense}
