@@ -66,7 +66,9 @@ export async function createExpense(
     if (!session) throw new Error("Unauthorized");
 
     const name = formData.get("name") as string;
-    const amountSpent = Number(formData.get("amountSpent"));
+    const amountSpent = parseFloat(
+      parseFloat(formData.get("amountSpent") as string).toFixed(2)
+    );
     const date = formData.get("date") as string;
     const budgetId = Number(formData.get("budgetId"));
 
