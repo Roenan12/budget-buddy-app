@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { auth, signIn, signOut } from "./auth";
-import { supabase } from "./supabase";
+import { supabase, supabaseUrl } from "./supabase";
 import { getBudgets, getExpenses, createUser } from "./data-service";
 
 interface AuthOptions {
@@ -361,6 +361,96 @@ export async function signUpWithEmailAction({
     return {
       success: false,
       message: error.message || "Failed to create account",
+    };
+  }
+}
+
+export interface UpdateUserResponse {
+  success: boolean;
+  message: string;
+}
+
+export async function updateUser(
+  formData: FormData
+): Promise<UpdateUserResponse> {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return { success: false, message: "You must be logged in" };
+    }
+
+    const fullName = formData.get("fullName") as string;
+    const email = formData.get("email") as string;
+    const avatar = formData.get("avatar") as File | null;
+
+    // Initialize updateData
+    const updateData: { fullName: string; email: string; avatar?: string } = {
+      fullName,
+      email,
+    };
+
+    // Only handle avatar upload if a new avatar was provided
+    if (avatar && avatar instanceof File) {
+      // Upload avatar to storage
+      const fileName = `avatar-${session.user.userId}-${Math.random()}`;
+      const { error: storageError } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, avatar);
+
+      if (storageError) {
+        return {
+          success: false,
+          message: `Failed to upload avatar: ${storageError.message}`,
+        };
+      }
+
+      const avatarUrl = `${supabaseUrl}/storage/v1/object/public/avatars/${fileName}`;
+      updateData.avatar = avatarUrl;
+    }
+
+    // Update user in database
+    const { error: dbError } = await supabase
+      .from("users")
+      .update(updateData)
+      .eq("id", session.user.userId);
+
+    if (dbError) {
+      return {
+        success: false,
+        message: `Failed to update profile in database: ${dbError.message}`,
+      };
+    }
+
+    // If avatar was uploaded, try to update auth user metadata
+    // But don't fail if it doesn't work
+    if (updateData.avatar) {
+      try {
+        const { error: authError } = await supabase.auth.updateUser({
+          data: { avatar: updateData.avatar },
+        });
+
+        if (authError) {
+          console.log(
+            "Note: Auth metadata update failed, but profile was updated successfully"
+          );
+        }
+      } catch (authError) {
+        console.log(
+          "Note: Auth metadata update failed, but profile was updated successfully"
+        );
+      }
+    }
+
+    revalidatePath("/dashboard/account/profile");
+    return {
+      success: true,
+      message: "Profile updated successfully",
+    };
+  } catch (error: any) {
+    console.error("Profile update error:", error);
+    return {
+      success: false,
+      message: error.message || "Failed to update profile",
     };
   }
 }

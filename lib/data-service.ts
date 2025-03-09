@@ -1,3 +1,4 @@
+import { auth } from "./auth";
 import { supabase } from "./supabase";
 import { notFound } from "next/navigation";
 
@@ -11,6 +12,7 @@ export type User = {
   id: number;
   fullName?: string;
   email?: string;
+  avatar?: string;
 };
 
 export type Budget = {
@@ -289,6 +291,18 @@ export async function getUser(
     console.error("getUser failed:", error);
     throw error;
   }
+}
+
+export async function getCurrentUser() {
+  const { data: session } = await supabase.auth.getSession(); // get the data from local storage
+  if (!session.session) return null;
+
+  const { data, error } = await supabase.auth.getUser(); // fetch current user
+
+  if (error) throw new Error(error.message);
+
+  console.log(data?.user);
+  return data?.user;
 }
 
 export async function createUser(newUser: { email: string; fullName: string }) {
