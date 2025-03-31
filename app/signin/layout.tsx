@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sign In - Budget Buddy",
+  title: "Sign In",
   description: "Sign in to your Budget Buddy account",
 };
 

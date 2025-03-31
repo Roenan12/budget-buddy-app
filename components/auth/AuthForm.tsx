@@ -17,13 +17,12 @@ import { useState } from "react";
 import SpinnerMini from "@/components/ui/feedback/spinner-mini";
 import { signInWithEmailAction, signUpWithEmailAction } from "@/lib/actions";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { SuccessDialog } from "@/components/ui/overlay/success-dialog";
 import { Eye, EyeOff } from "lucide-react";
 
 const signInSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 const signUpSchema = z
