@@ -2,7 +2,7 @@ import { Separator } from "@/components/ui/layout/separator";
 import { UpdateProfileForm } from "@/components/account/UpdateProfileForm";
 import { Metadata } from "next";
 import { auth } from "@/lib/auth";
-import { getCurrentUser, getUser } from "@/lib/data-service";
+import { getUser } from "@/lib/data-service";
 
 export const metadata: Metadata = {
   title: "Update profile",

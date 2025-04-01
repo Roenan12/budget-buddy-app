@@ -18,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/overlay/dropdown-menu";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { deleteExpense } from "@/lib/actions";
 import { Budget, Expense } from "@/lib/data-service";
 import { MoreVertical, Pencil, Trash } from "lucide-react";
@@ -27,9 +27,14 @@ import { useState } from "react";
 interface ExpenseTableRowProps {
   expense: Expense;
   budgets: Budget[];
+  currencySymbol: string;
 }
 
-function ExpenseTableRow({ expense, budgets }: ExpenseTableRowProps) {
+function ExpenseTableRow({
+  expense,
+  budgets,
+  currencySymbol,
+}: ExpenseTableRowProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -60,7 +65,10 @@ function ExpenseTableRow({ expense, budgets }: ExpenseTableRowProps) {
   return (
     <TableRow>
       <TableCell>{expense.name}</TableCell>
-      <TableCell>${expense.amountSpent.toFixed(2)}</TableCell>
+      <TableCell>
+        {currencySymbol}
+        {expense.amountSpent.toFixed(2)}
+      </TableCell>
       <TableCell>{expense.date}</TableCell>
       <TableCell className="text-center">
         {expense.budgets.budgetName}

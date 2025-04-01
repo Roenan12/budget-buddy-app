@@ -1,6 +1,6 @@
 import { BudgetList, BudgetForm } from "@/components/budgets";
 import { auth } from "@/lib/auth";
-import { getBudgets } from "@/lib/data-service";
+import { getBudgets, getCurrentCurrencySymbol } from "@/lib/data-service";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { PlusCircle } from "lucide-react";
@@ -27,11 +27,14 @@ export default async function Page() {
   const budgets = await getBudgets(session?.user?.userId);
   if (!budgets) return;
 
+  // Get the user's currency symbol
+  const currencySymbol = await getCurrentCurrencySymbol();
+
   return (
     <div className="w-full p-4">
       <h1 className="text-2xl font-bold mb-4">Budgets</h1>
 
-      <BudgetForm />
+      <BudgetForm currencySymbol={currencySymbol} />
 
       <Suspense fallback={<BudgetListSkeleton />}>
         {budgets.length === 0 ? (
@@ -43,7 +46,7 @@ export default async function Page() {
             </p>
           </div>
         ) : (
-          <BudgetList budgets={budgets} />
+          <BudgetList budgets={budgets} currencySymbol={currencySymbol} />
         )}
       </Suspense>
     </div>

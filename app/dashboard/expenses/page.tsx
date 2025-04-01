@@ -1,6 +1,10 @@
 import { ExpenseForm, ExpenseTable } from "@/components/expenses";
 import { auth } from "@/lib/auth";
-import { getBudgets, getExpenses } from "@/lib/data-service";
+import {
+  getBudgets,
+  getExpenses,
+  getCurrentCurrencySymbol,
+} from "@/lib/data-service";
 import { Metadata } from "next";
 import { Suspense } from "react";
 import { ReceiptText } from "lucide-react";
@@ -47,12 +51,13 @@ export default async function Page() {
   if (!budgets) return;
   const expenses = await getExpenses(session.user.userId);
   if (!expenses) return;
+  const currencySymbol = await getCurrentCurrencySymbol();
 
   return (
     <div className="w-full p-4">
       <h1 className="text-2xl font-bold mb-4">Expenses</h1>
 
-      <ExpenseForm budgets={budgets} />
+      <ExpenseForm budgets={budgets} currencySymbol={currencySymbol} />
 
       <Suspense fallback={<ExpenseTableSkeleton />}>
         {expenses.length === 0 ? (
@@ -64,7 +69,11 @@ export default async function Page() {
             </p>
           </div>
         ) : (
-          <ExpenseTable expenses={expenses} budgets={budgets} />
+          <ExpenseTable
+            expenses={expenses}
+            budgets={budgets}
+            currencySymbol={currencySymbol}
+          />
         )}
       </Suspense>
     </div>

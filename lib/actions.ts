@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { auth, signIn, signOut } from "./auth";
 import { supabase, supabaseUrl } from "./supabase";
-import { getBudgets, getExpenses, createUser } from "./data-service";
+import { getBudgets, getExpenses, createUser, Currency } from "./data-service";
+import { currencies } from "@/data/currencies";
 
 interface AuthOptions {
   redirectTo: string;
@@ -453,6 +454,190 @@ export async function updateUser(
     return {
       success: false,
       message: error.message || "Failed to update profile",
+    };
+  }
+}
+
+export async function updateUserCurrencyAction(
+  currencyCode: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return { success: false, message: "You must be logged in" };
+    }
+
+    // First check if user has a settings record
+    const { data: existingSettings } = await supabase
+      .from("settings")
+      .select("id")
+      .eq("user_id", session.user.userId)
+      .single();
+
+    if (existingSettings) {
+      // Update existing settings
+      const { error } = await supabase
+        .from("settings")
+        .update({ currency_code: currencyCode })
+        .eq("user_id", session.user.userId);
+
+      if (error) {
+        console.error("Error updating user currency:", error);
+        return {
+          success: false,
+          message: `Failed to update currency: ${error.message}`,
+        };
+      }
+    } else {
+      // Create new settings record
+      const { error } = await supabase
+        .from("settings")
+        .insert([
+          { user_id: session.user.userId, currency_code: currencyCode },
+        ]);
+
+      if (error) {
+        console.error("Error creating user currency settings:", error);
+        return {
+          success: false,
+          message: `Failed to create currency settings: ${error.message}`,
+        };
+      }
+    }
+
+    // Revalidate any pages that might show currency
+    revalidatePath("/dashboard");
+
+    return { success: true, message: "Currency updated successfully" };
+  } catch (error: any) {
+    console.error("Currency update error:", error);
+    return {
+      success: false,
+      message: error.message || "Failed to update currency",
+    };
+  }
+}
+
+export async function getUserCurrencyAction(): Promise<{
+  success: boolean;
+  currency: string;
+  message?: string;
+}> {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return { success: false, currency: "USD", message: "Not authenticated" };
+    }
+
+    // Get user's currency preference
+    const { data, error } = await supabase
+      .from("settings")
+      .select("currency_code")
+      .eq("user_id", session.user.userId)
+      .single();
+
+    if (error) {
+      // If no settings found, return default
+      if (error.code === "PGRST116") {
+        return { success: true, currency: "USD" };
+      }
+      console.error("Error fetching user currency:", error);
+      return { success: false, currency: "USD", message: error.message };
+    }
+
+    return { success: true, currency: data.currency_code };
+  } catch (error: any) {
+    console.error("getUserCurrency failed:", error);
+    return {
+      success: false,
+      currency: "USD",
+      message: error.message || "Failed to get currency",
+    };
+  }
+}
+
+export async function getCurrenciesAction(): Promise<{
+  success: boolean;
+  currencies: Currency[];
+  message?: string;
+}> {
+  try {
+    const { data, error } = await supabase
+      .from("currencies")
+      .select("*")
+      .order("code", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching currencies:", error);
+      return {
+        success: false,
+        currencies: [],
+        message: `Currencies could not be loaded: ${error.message}`,
+      };
+    }
+
+    return { success: true, currencies: data || [] };
+  } catch (error: any) {
+    console.error("getCurrencies failed:", error);
+    return {
+      success: false,
+      currencies: [],
+      message: error.message || "Failed to get currencies",
+    };
+  }
+}
+
+export async function getCurrentCurrencySymbolAction(): Promise<{
+  success: boolean;
+  symbol: string;
+  currencyCode: string;
+  message?: string;
+}> {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return {
+        success: true,
+        symbol: "$",
+        currencyCode: "USD",
+        message: "Not authenticated, using default currency",
+      };
+    }
+
+    // Get user's currency preference
+    const { data, error } = await supabase
+      .from("settings")
+      .select("currency_code")
+      .eq("user_id", session.user.userId)
+      .single();
+
+    if (error) {
+      // If no settings found, return default
+      if (error.code === "PGRST116") {
+        return { success: true, symbol: "$", currencyCode: "USD" };
+      }
+      console.error("Error fetching user currency:", error);
+      return {
+        success: false,
+        symbol: "$",
+        currencyCode: "USD",
+        message: error.message,
+      };
+    }
+
+    // Get the symbol for the currency code
+    const currencyCode = data.currency_code;
+    const currencyInfo = currencies.find((c) => c.code === currencyCode);
+    const symbol = currencyInfo?.symbol || "$";
+
+    return { success: true, symbol, currencyCode };
+  } catch (error: any) {
+    console.error("getCurrentCurrencySymbol failed:", error);
+    return {
+      success: false,
+      symbol: "$",
+      currencyCode: "USD",
+      message: error.message || "Failed to get currency symbol",
     };
   }
 }

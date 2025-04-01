@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/form/select";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { createBudget } from "@/lib/actions";
 import { budgetCategories } from "@/lib/constants";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -33,7 +33,11 @@ const budgetFormSchema = z.object({
 
 type BudgetFormValues = z.infer<typeof budgetFormSchema>;
 
-function BudgetForm() {
+interface BudgetFormProps {
+  currencySymbol: string;
+}
+
+function BudgetForm({ currencySymbol }: BudgetFormProps) {
   const { toast } = useToast();
   const form = useForm<BudgetFormValues>({
     resolver: zodResolver(budgetFormSchema),
@@ -89,11 +93,17 @@ function BudgetForm() {
         </div>
         <div className="flex-1">
           <Label htmlFor="amount">Amount</Label>
-          <Input
-            id="amount"
-            placeholder="e.g. 1000.00"
-            {...form.register("amount")}
-          />
+          <div className="relative">
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+              {currencySymbol}
+            </span>
+            <Input
+              id="amount"
+              placeholder="e.g. 1000.00"
+              className={`${currencySymbol.length > 1 ? "pl-12" : "pl-7"}`}
+              {...form.register("amount")}
+            />
+          </div>
           {form.formState.errors.amount && (
             <p className="text-sm text-red-500 mt-1">
               {form.formState.errors.amount.message}

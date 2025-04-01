@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/overlay/dropdown-menu";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { deleteBudget } from "@/lib/actions";
 import { Budget } from "@/lib/data-service";
 import { formatDate } from "@/lib/utils";

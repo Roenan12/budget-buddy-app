@@ -27,13 +27,13 @@ type ChartDataPoint = {
   }[];
 };
 
-function BudgetChart({
-  budgets,
-  expenses,
-}: {
+interface BudgetChartProps {
   budgets: Budget[];
   expenses: Expense[];
-}) {
+  currencySymbol: string;
+}
+
+function BudgetChart({ budgets, expenses, currencySymbol }: BudgetChartProps) {
   if (!budgets.length || !expenses.length) {
     return (
       <CardContent className="flex flex-col items-center justify-center min-h-[350px] text-muted-foreground">
@@ -156,7 +156,7 @@ function BudgetChart({
             <YAxis
               tickLine={false}
               axisLine={false}
-              tickFormatter={(value) => `$${value}`}
+              tickFormatter={(value) => `${currencySymbol}${value}`}
             />
             <ChartTooltip
               cursor={false}
@@ -190,13 +190,14 @@ function BudgetChart({
                           Budget: {uniqueBudgets.join(", ")}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          Amount: ${budget?.amount.toFixed(2)}
+                          Amount: {currencySymbol}
+                          {budget?.amount.toFixed(2)}
                         </div>
                         <div className="text-xs text-muted-foreground">
                           Expense: {allExpenses.join(", ")}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          Spent: $
+                          Spent: {currencySymbol}
                           {data.expenseDetails
                             .reduce(
                               (sum: number, detail: { amount: number }) =>
@@ -215,7 +216,8 @@ function BudgetChart({
                                 </span>
                               </div>
                               <span className="font-medium">
-                                ${data.remainingBudget.toFixed(2)}
+                                {currencySymbol}
+                                {data.remainingBudget.toFixed(2)}
                               </span>
                             </div>
                             <div className="flex items-center justify-between gap-2">
@@ -226,7 +228,8 @@ function BudgetChart({
                                 </span>
                               </div>
                               <span className="font-medium">
-                                ${data.totalExpenses.toFixed(2)}
+                                {currencySymbol}
+                                {data.totalExpenses.toFixed(2)}
                               </span>
                             </div>
                           </div>

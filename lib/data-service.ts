@@ -1,6 +1,7 @@
 import { auth } from "./auth";
 import { supabase } from "./supabase";
 import { notFound } from "next/navigation";
+import { currencies } from "@/data/currencies";
 
 type BudgetDetails = {
   id: number;
@@ -41,6 +42,20 @@ export type Users = {
   id: number;
   fullName: string;
   email: string;
+};
+
+export type Currency = {
+  code: string;
+  name: string;
+  symbol: string;
+};
+
+export type UserSettings = {
+  id: string;
+  currency_code: string;
+  user_id: number;
+  created_at: string;
+  updated_at: string;
 };
 
 export async function getBudget(id: number): Promise<Budget | null> {
@@ -347,5 +362,38 @@ export async function createUser(newUser: { email: string; fullName: string }) {
   } catch (error) {
     console.error("createUser failed:", error);
     throw error;
+  }
+}
+
+export async function getCurrentCurrencySymbol(): Promise<string> {
+  try {
+    // Get current session
+    const session = await auth();
+    if (!session?.user) {
+      return "$"; // Default to USD symbol if not logged in
+    }
+
+    // Get user's currency preference
+    const { data, error } = await supabase
+      .from("settings")
+      .select("currency_code")
+      .eq("user_id", session.user.userId)
+      .single();
+
+    if (error) {
+      // If no settings found, return default
+      if (error.code === "PGRST116") {
+        return "$"; // Default USD symbol
+      }
+      console.error("Error fetching user currency:", error);
+      return "$"; // Default to USD symbol on error
+    }
+
+    // Find currency symbol based on code
+    const currencyInfo = currencies.find((c) => c.code === data.currency_code);
+    return currencyInfo?.symbol || "$"; // Return symbol or default if not found
+  } catch (error) {
+    console.error("getCurrentCurrencySymbol failed:", error);
+    return "$"; // Default to USD symbol on error
   }
 }

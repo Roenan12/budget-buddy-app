@@ -23,7 +23,7 @@ import { Card } from "../ui/data-display";
 import { User as UserIcon } from "lucide-react";
 import { User } from "@/lib/data-service";
 import { updateUser } from "@/lib/actions";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { useRouter } from "next/navigation";
 
 const profileFormSchema = z.object({

@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/form/select";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { createExpense } from "@/lib/actions";
 import { Budget } from "@/lib/data-service";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -57,9 +57,10 @@ type ExpenseFormValues = z.infer<ReturnType<typeof createExpenseFormSchema>>;
 
 interface ExpenseFormProps {
   budgets: Budget[];
+  currencySymbol: string;
 }
 
-function ExpenseForm({ budgets }: ExpenseFormProps) {
+function ExpenseForm({ budgets, currencySymbol }: ExpenseFormProps) {
   const { toast } = useToast();
   const form = useForm<ExpenseFormValues>({
     resolver: zodResolver(createExpenseFormSchema(budgets)),
@@ -114,11 +115,17 @@ function ExpenseForm({ budgets }: ExpenseFormProps) {
         </div>
         <div>
           <Label htmlFor="amountSpent">Amount</Label>
-          <Input
-            id="amountSpent"
-            placeholder="e.g. 100.50"
-            {...form.register("amountSpent")}
-          />
+          <div className="relative">
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+              {currencySymbol}
+            </span>
+            <Input
+              id="amountSpent"
+              placeholder="e.g. 100.50"
+              className={`${currencySymbol.length > 1 ? "pl-12" : "pl-7"}`}
+              {...form.register("amountSpent")}
+            />
+          </div>
           {form.formState.errors.amountSpent && (
             <p className="text-sm text-red-500 mt-1">
               {form.formState.errors.amountSpent.message}
@@ -146,7 +153,7 @@ function ExpenseForm({ budgets }: ExpenseFormProps) {
             <SelectContent>
               {budgets.map((budget) => (
                 <SelectItem key={budget.id} value={budget.id.toString()}>
-                  {budget.name} ($
+                  {budget.name} ({currencySymbol}
                   {budget.amount - (budget.expenses?.totalSpent || 0)}{" "}
                   remaining)
                 </SelectItem>

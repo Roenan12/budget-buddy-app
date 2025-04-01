@@ -5,24 +5,43 @@ import { BudgetCard } from "@/components/budgets";
 import { SearchBar } from "@/components/expenses";
 import Pagination from "@/components/ui/data-display/Pagination";
 import { useState, useEffect } from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/useMobile";
 import {
   PaginationProvider,
   usePagination,
 } from "@/contexts/PaginationContext";
 
-function BudgetList({ budgets: initialBudgets }: { budgets: Budget[] }) {
+interface BudgetListProps {
+  budgets: Budget[];
+  currencySymbol: string;
+}
+
+function BudgetList({
+  budgets: initialBudgets,
+  currencySymbol,
+}: BudgetListProps) {
   const isMobile = useIsMobile();
   const initialItemsPerPage = isMobile ? 4 : 8;
 
   return (
     <PaginationProvider initialItemsPerPage={initialItemsPerPage}>
-      <BudgetListContent budgets={initialBudgets} />
+      <BudgetListContent
+        budgets={initialBudgets}
+        currencySymbol={currencySymbol}
+      />
     </PaginationProvider>
   );
 }
 
-function BudgetListContent({ budgets: initialBudgets }: { budgets: Budget[] }) {
+interface BudgetListContentProps {
+  budgets: Budget[];
+  currencySymbol: string;
+}
+
+function BudgetListContent({
+  budgets: initialBudgets,
+  currencySymbol,
+}: BudgetListContentProps) {
   const { currentPage, itemsPerPage, setCurrentPage, setItemsPerPage } =
     usePagination();
   const isMobile = useIsMobile();
@@ -84,7 +103,11 @@ function BudgetListContent({ budgets: initialBudgets }: { budgets: Budget[] }) {
         <div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {currentBudgets.map((budget) => (
-              <BudgetCard key={budget.id} budget={budget} />
+              <BudgetCard
+                key={budget.id}
+                budget={budget}
+                currencySymbol={currencySymbol}
+              />
             ))}
           </div>
 

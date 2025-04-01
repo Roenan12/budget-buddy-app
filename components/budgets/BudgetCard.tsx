@@ -15,9 +15,10 @@ import Link from "next/link";
 
 type BudgetCardProps = {
   budget: Budget;
+  currencySymbol: string;
 };
 
-function BudgetCard({ budget }: BudgetCardProps) {
+function BudgetCard({ budget, currencySymbol }: BudgetCardProps) {
   const { id, name, amount, category, expenses } = budget;
 
   const amountSpent = expenses?.totalSpent || 0;
@@ -48,7 +49,8 @@ function BudgetCard({ budget }: BudgetCardProps) {
           </span>
         </CardTitle>
         <CardDescription className="font-semibold text-3xl">
-          ${formatCurrency(amount)}
+          {currencySymbol}
+          {formatCurrency(amount)}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -62,10 +64,12 @@ function BudgetCard({ budget }: BudgetCardProps) {
 
         <div className="flex justify-between mt-2 text-sm text-gray-600">
           <span className="text-red-500">
-            ${formatCurrency(amountSpent)} spent
+            {currencySymbol}
+            {formatCurrency(amountSpent)} spent
           </span>
           <span className="text-green-500">
-            ${formatCurrency(remainingAmount)} remaining
+            {currencySymbol}
+            {formatCurrency(remainingAmount)} remaining
           </span>
         </div>
       </CardContent>

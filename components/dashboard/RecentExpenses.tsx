@@ -2,7 +2,12 @@ import { getRecentExpenses } from "@/lib/data-service";
 import Link from "next/link";
 import { CreditCard } from "lucide-react";
 
-async function RecentExpenses({ userId }: { userId: number }) {
+interface RecentExpensesProps {
+  userId: number;
+  currencySymbol: string;
+}
+
+async function RecentExpenses({ userId, currencySymbol }: RecentExpensesProps) {
   const expenses = await getRecentExpenses(userId);
 
   if (!expenses.length) {
@@ -32,7 +37,8 @@ async function RecentExpenses({ userId }: { userId: number }) {
             </div>
           </div>
           <div className="font-medium text-sm whitespace-nowrap">
-            ${expense.amountSpent.toFixed(2)}
+            {currencySymbol}
+            {expense.amountSpent.toFixed(2)}
           </div>
         </Link>
       ))}

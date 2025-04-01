@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/form/select";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { updateBudget } from "@/lib/actions";
 import { budgetCategories } from "@/lib/constants";
 import { Budget } from "@/lib/data-service";

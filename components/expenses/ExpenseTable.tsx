@@ -17,27 +17,39 @@ import {
   usePagination,
 } from "@/contexts/PaginationContext";
 
+interface ExpenseTableProps {
+  expenses: Expense[];
+  budgets: Budget[];
+  currencySymbol: string;
+}
+
 function ExpenseTable({
   expenses: initialExpenses,
   budgets,
-}: {
-  expenses: Expense[];
-  budgets: Budget[];
-}) {
+  currencySymbol,
+}: ExpenseTableProps) {
   return (
     <PaginationProvider initialItemsPerPage={5}>
-      <ExpenseTableContent expenses={initialExpenses} budgets={budgets} />
+      <ExpenseTableContent
+        expenses={initialExpenses}
+        budgets={budgets}
+        currencySymbol={currencySymbol}
+      />
     </PaginationProvider>
   );
+}
+
+interface ExpenseTableContentProps {
+  expenses: Expense[];
+  budgets: Budget[];
+  currencySymbol: string;
 }
 
 function ExpenseTableContent({
   expenses: initialExpenses,
   budgets,
-}: {
-  expenses: Expense[];
-  budgets: Budget[];
-}) {
+  currencySymbol,
+}: ExpenseTableContentProps) {
   const { currentPage, itemsPerPage, setCurrentPage, setItemsPerPage } =
     usePagination();
   const [sortField, setSortField] = useState<string | null>(null);
@@ -159,6 +171,7 @@ function ExpenseTableContent({
                   key={expense.id}
                   expense={expense}
                   budgets={budgets}
+                  currencySymbol={currencySymbol}
                 />
               ))}
             </TableBody>

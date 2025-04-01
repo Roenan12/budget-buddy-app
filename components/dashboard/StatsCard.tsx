@@ -8,7 +8,12 @@ import { Budget } from "@/lib/data-service";
 import { Activity, CreditCard, DollarSign, HandCoins } from "lucide-react";
 import Link from "next/link";
 
-async function StatsCard({ budgets }: { budgets: Budget[] }) {
+interface StatsCardProps {
+  budgets: Budget[];
+  currencySymbol: string;
+}
+
+async function StatsCard({ budgets, currencySymbol }: StatsCardProps) {
   const activeBudgets = budgets?.length;
   const totalBudget = budgets?.reduce((acc, budget) => acc + budget.amount, 0);
   const totalExpenses = budgets?.reduce(
@@ -26,7 +31,10 @@ async function StatsCard({ budgets }: { budgets: Budget[] }) {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalBudget.toFixed(2)}</div>
+            <div className="text-2xl font-bold">
+              {currencySymbol}
+              {totalBudget.toFixed(2)}
+            </div>
           </CardContent>
         </Card>
       </Link>
@@ -40,7 +48,8 @@ async function StatsCard({ budgets }: { budgets: Budget[] }) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${totalExpenses.toFixed(2)}
+              {currencySymbol}
+              {totalExpenses.toFixed(2)}
             </div>
           </CardContent>
         </Card>
@@ -51,7 +60,10 @@ async function StatsCard({ budgets }: { budgets: Budget[] }) {
           <HandCoins className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${remainingBudget}</div>
+          <div className="text-2xl font-bold">
+            {currencySymbol}
+            {remainingBudget}
+          </div>
         </CardContent>
       </Card>
       <Card>
