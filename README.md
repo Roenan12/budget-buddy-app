@@ -22,6 +22,7 @@ A modern, user-friendly financial management application built to help you track
 - **Search & Filtering**: Easy-to-use search filtering for both budgets and expenses
 - **Pagination**: Efficient handling of large datasets with customizable page sizes
 - **Dark/Light Theme**: Support for system and user-preferred color themes
+- **Multi-currency Support**: configure and choose your preferred currency in settings
 
 ## 🛠️ Technologies Used
 
@@ -96,22 +97,12 @@ pnpm dev
 
 5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## 📱 Application Structure
-
-- `/app` - Next.js 14 app directory containing all routes and layouts
-- `/components` - Reusable React components
-- `/lib` - Utility functions, hooks, and services
-- `/config` - Application configuration files
-- `/styles` - Global styles and Tailwind CSS configuration
-- `/public` - Static assets
-
 ## 🔄 Future Improvements
 
 ### Features
 
 - Bulk actions (multiple deletion for budgets and expenses)
 - Import/Export data through CSV files
-- Multi-currency support
 
 ### Technical
 
