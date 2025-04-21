@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Label } from "@/components/ui/form/label";
 import {
   Select,
@@ -32,9 +32,18 @@ export function UpdateCurrencyForm() {
     }
   }, [currency, isPending]);
 
-  const handleSave = async () => {
+  // Memoize currency options to prevent re-creation on every render
+  const currencyOptions = useMemo(() => {
+    return currencies.map((curr) => (
+      <SelectItem key={curr.code} value={curr.code}>
+        {curr.name}
+      </SelectItem>
+    ));
+  }, [currencies]);
+
+  // Memoize save handler since it's an async operation
+  const handleSave = useCallback(async () => {
     if (selectedCurrency === currency) {
-      // No changes made
       toast({
         title: "No Changes",
         description: "You haven't made any changes to your currency settings.",
@@ -70,12 +79,12 @@ export function UpdateCurrencyForm() {
     } finally {
       setIsPending(false);
     }
-  };
+  }, [selectedCurrency, currency, setCurrency]);
 
-  const handleCancel = () => {
-    // Reset to the original currency from context
-    setSelectedCurrency(currency);
-  };
+  // Memoize disabled state calculation
+  const isDisabled = useMemo(() => {
+    return selectedCurrency === currency || isLoading || isPending;
+  }, [selectedCurrency, currency, isLoading, isPending]);
 
   return (
     <Card className="p-4 max-w-[500px]">
@@ -94,13 +103,7 @@ export function UpdateCurrencyForm() {
               <SelectTrigger>
                 <SelectValue placeholder="Select currency" />
               </SelectTrigger>
-              <SelectContent>
-                {currencies.map((curr) => (
-                  <SelectItem key={curr.code} value={curr.code}>
-                    {curr.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
+              <SelectContent>{currencyOptions}</SelectContent>
             </Select>
             {isLoading && (
               <p className="text-sm text-muted-foreground mt-2">
@@ -112,16 +115,12 @@ export function UpdateCurrencyForm() {
           <div className="flex justify-end space-x-2 pt-4">
             <Button
               variant="outline"
-              onClick={handleCancel}
-              disabled={selectedCurrency === currency || isLoading || isPending}
+              onClick={() => setSelectedCurrency(currency)}
+              disabled={isDisabled}
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleSave}
-              disabled={selectedCurrency === currency || isLoading || isPending}
-              className="ml-2"
-            >
+            <Button onClick={handleSave} disabled={isDisabled} className="ml-2">
               {isPending ? "Saving..." : "Save Changes"}
             </Button>
           </div>
