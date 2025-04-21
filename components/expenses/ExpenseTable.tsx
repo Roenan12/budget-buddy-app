@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/data-display/table";
 import { Budget, Expense } from "@/lib/data-service";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState, useMemo } from "react";
 import Pagination from "@/components/ui/data-display/Pagination";
 import {
   PaginationProvider,
@@ -52,72 +52,83 @@ function ExpenseTableContent({
 }: ExpenseTableContentProps) {
   const { currentPage, itemsPerPage, setCurrentPage, setItemsPerPage } =
     usePagination();
-  const [sortField, setSortField] = useState<string | null>(null);
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Update useEffect to handle both initial expenses and search filtering
-  useEffect(() => {
-    const filtered = initialExpenses.filter((expense) => {
-      const searchLower = searchQuery.toLowerCase();
-      return (
-        expense.name.toLowerCase().includes(searchLower) ||
-        expense.amountSpent.toString().includes(searchLower) ||
-        expense.date.toLowerCase().includes(searchLower) ||
-        expense.budgets.budgetName.toLowerCase().includes(searchLower)
-      );
-    });
-    setExpenses(filtered);
-  }, [initialExpenses, searchQuery]);
+  const [sortConfig, setSortConfig] = useState<{
+    field: string;
+    direction: "asc" | "desc";
+  }>({ field: "", direction: "asc" });
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    setCurrentPage(1); // Reset to first page when searching
+    setCurrentPage(1);
   };
 
-  // Sorting function
   const handleSort = (field: string) => {
-    const newDirection =
-      sortField === field && sortDirection === "asc" ? "desc" : "asc";
-    setSortDirection(newDirection);
-    setSortField(field);
+    setSortConfig((prevConfig) => ({
+      field,
+      direction:
+        prevConfig.field === field && prevConfig.direction === "asc"
+          ? "desc"
+          : "asc",
+    }));
+  };
 
-    const sortedExpenses = [...expenses].sort((a, b) => {
-      if (field === "amountSpent") {
-        return newDirection === "asc"
-          ? a[field] - b[field]
-          : b[field] - a[field];
+  // memoize for expensive filtering operation
+  const filteredExpenses = useMemo(() => {
+    return initialExpenses.filter((expense) => {
+      const searchLower = searchQuery.toLowerCase();
+      const budget = budgets.find((b) => b.id === expense.budgets.id);
+      return (
+        expense.name.toLowerCase().includes(searchLower) ||
+        expense.amountSpent.toString().includes(searchLower) ||
+        expense.date.includes(searchLower) ||
+        budget?.name.toLowerCase().includes(searchLower)
+      );
+    });
+  }, [initialExpenses, searchQuery, budgets]);
+
+  // memoize for expensive sorting operation
+  const sortedExpenses = useMemo(() => {
+    if (!sortConfig.field) return filteredExpenses;
+
+    return [...filteredExpenses].sort((a, b) => {
+      if (sortConfig.field === "budget") {
+        const budgetA =
+          budgets.find((budget) => budget.id === a.budgets.id)?.name || "";
+        const budgetB =
+          budgets.find((budget) => budget.id === b.budgets.id)?.name || "";
+        return sortConfig.direction === "asc"
+          ? budgetA.localeCompare(budgetB)
+          : budgetB.localeCompare(budgetA);
       }
-      if (field === "date") {
-        return newDirection === "asc"
-          ? new Date(a.date).getTime() - new Date(b.date).getTime()
-          : new Date(b.date).getTime() - new Date(a.date).getTime();
+
+      const aValue = a[sortConfig.field as keyof Expense];
+      const bValue = b[sortConfig.field as keyof Expense];
+
+      if (typeof aValue === "string" && typeof bValue === "string") {
+        return sortConfig.direction === "asc"
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
       }
-      if (field === "budget") {
-        return newDirection === "asc"
-          ? a.budgets.budgetName.localeCompare(b.budgets.budgetName)
-          : b.budgets.budgetName.localeCompare(a.budgets.budgetName);
+
+      if (typeof aValue === "number" && typeof bValue === "number") {
+        return sortConfig.direction === "asc"
+          ? aValue - bValue
+          : bValue - aValue;
       }
-      if (field === "name") {
-        return newDirection === "asc"
-          ? a.name.localeCompare(b.name)
-          : b.name.localeCompare(a.name);
-      }
+
       return 0;
     });
+  }, [filteredExpenses, sortConfig, budgets]);
 
-    setExpenses(sortedExpenses);
-  };
-
-  // Pagination calculations
+  // Simple slice operation, no need for memoization
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentExpenses = expenses.slice(startIndex, endIndex);
+  const currentExpenses = sortedExpenses.slice(startIndex, endIndex);
 
   const SortIcon = ({ field }: { field: string }) => {
-    if (sortField !== field) return null;
-    return sortDirection === "asc" ? (
+    if (sortConfig.field !== field) return null;
+    return sortConfig.direction === "asc" ? (
       <ChevronUp className="inline w-4 h-4" />
     ) : (
       <ChevronDown className="inline w-4 h-4" />
@@ -131,7 +142,7 @@ function ExpenseTableContent({
         placeholder="Search expenses by name, amount, date, or budget..."
       />
 
-      {expenses.length === 0 ? (
+      {sortedExpenses.length === 0 ? (
         <div className="text-center py-4">No expenses found</div>
       ) : (
         <div>
@@ -179,7 +190,7 @@ function ExpenseTableContent({
 
           <Pagination
             currentPage={currentPage}
-            totalItems={expenses.length}
+            totalItems={sortedExpenses.length}
             itemsPerPage={itemsPerPage}
             onPageChange={setCurrentPage}
             onItemsPerPageChange={setItemsPerPage}

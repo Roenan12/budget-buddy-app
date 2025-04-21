@@ -22,7 +22,7 @@ import { useToast } from "@/hooks/useToast";
 import { deleteExpense } from "@/lib/actions";
 import { Budget, Expense } from "@/lib/data-service";
 import { MoreVertical, Pencil, Trash } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 interface ExpenseTableRowProps {
   expense: Expense;
@@ -40,8 +40,8 @@ function ExpenseTableRow({
 
   const { toast } = useToast();
 
-  async function handleDelete(expenseId: number) {
-    const result = await deleteExpense(expenseId);
+  const handleDelete = useCallback(async () => {
+    const result = await deleteExpense(expense.id);
     if (result.success) {
       toast({
         title: "Success!",
@@ -55,7 +55,7 @@ function ExpenseTableRow({
         description: result.message,
       });
     }
-  }
+  }, [expense.id, toast]);
 
   const handleEditClick = () => {
     setIsDropdownOpen(false); // Close dropdown when opening dialog
